@@ -31,6 +31,7 @@
 </template>
 
 <script>
+import { ipcRenderer } from 'electron'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { ScatterChart } from 'echarts/charts'
@@ -61,7 +62,36 @@ use([
   }
 })
 export default class Chart extends Vue {
-  option = null
+  data = []
+
+  get option () {
+    const { data } = this
+    if (data.length) {
+      return {
+        tooltip: {},
+        xAxis: {
+          scale: true,
+          axisLabel: {
+            formatter: (value) => {
+              return moment(value).format('HH:mm')
+            }
+          }
+        },
+        yAxis: {
+          scale: true
+        },
+        series: [
+          {
+            symbolSize: 10,
+            data: data.map(item => [item.date, (item.sgv * 0.0555).toFixed(1)]),
+            type: 'scatter'
+          }
+        ]
+      }
+    } else {
+      return null
+    }
+  }
 
   mounted () {
     this.initChartData()
@@ -70,62 +100,30 @@ export default class Chart extends Vue {
 
   async initChartData () {
     const { data } = await getEntries({
-      'find[date][$gte]': moment('2022-06-11').format('x'),
+      'find[date][$gte]': moment().startOf('day').format('x'),
+      'find[date][$lte]': moment().endOf('day').format('x'),
       count: 999
     })
-    this.renderChart()
-    console.log(data)
+    this.data = data
+    ipcRenderer.send('receive-entry', data[0])
   }
 
   async getAppendChartData () {
-    const { data } = await getEntries({
-      'find[date][$gt]': moment().format('x'),
-      count: 10
-    })
-    console.log(data)
+    if (this.data.length) {
+      const { data } = await getEntries({
+        'find[date][$gt]': this.data[0].date
+      })
+      if (data.length) {
+        this.data = [...data, ...this.data]
+        ipcRenderer.send('receive-entry', data[0])
+      }
+    }
   }
 
   async loop () {
     setInterval(() => {
       this.getAppendChartData()
     }, 60 * 1000)
-  }
-
-  renderChart () {
-    this.option = {
-      xAxis: {},
-      yAxis: {},
-      series: [
-        {
-          symbolSize: 20,
-          data: [
-            [10.0, 8.04],
-            [8.07, 6.95],
-            [13.0, 7.58],
-            [9.05, 8.81],
-            [11.0, 8.33],
-            [14.0, 7.66],
-            [13.4, 6.81],
-            [10.0, 6.33],
-            [14.0, 8.96],
-            [12.5, 6.82],
-            [9.15, 7.2],
-            [11.5, 7.2],
-            [3.03, 4.23],
-            [12.2, 7.83],
-            [2.02, 4.47],
-            [1.05, 3.33],
-            [4.05, 4.96],
-            [6.03, 7.24],
-            [12.0, 6.26],
-            [12.0, 8.84],
-            [7.08, 5.82],
-            [5.02, 5.68]
-          ],
-          type: 'scatter'
-        }
-      ]
-    }
   }
 }
 </script>

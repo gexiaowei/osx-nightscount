@@ -1,6 +1,7 @@
 'use strict'
 
-import { app, BrowserWindow, nativeImage, protocol, Tray } from 'electron'
+import { app, BrowserWindow, nativeImage, protocol, Tray, ipcMain, nativeTheme } from 'electron'
+import moment from 'moment'
 import path from 'path'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
@@ -21,13 +22,7 @@ protocol.registerSchemesAsPrivileged([
 ])
 
 function createTray () {
-  const image = nativeImage.createFromPath(
-    path.join(__dirname, '../src/assets/logo.png')
-  )
-  tray = new Tray(image.resize({
-    width: 16,
-    height: 16
-  }))
+  tray = new Tray(getTrayIcon())
   tray.setToolTip('Nightscount')
   tray.setTitle('6.4mmol/l')
   tray.on('right-click', toggleWindow)
@@ -73,7 +68,40 @@ async function createWindow () {
     // Load the index.html when not in development
     await win.loadURL('app://./index.html')
   }
-  win.setTitle('Capvision Salary Tool')
+
+  ipcMain.handle('dark-mode:toggle', () => {
+    if (nativeTheme.shouldUseDarkColors) {
+      nativeTheme.themeSource = 'light'
+    } else {
+      nativeTheme.themeSource = 'dark'
+    }
+    return nativeTheme.shouldUseDarkColors
+  })
+
+  ipcMain.handle('dark-mode:system', () => {
+    nativeTheme.themeSource = 'system'
+  })
+
+  ipcMain.on('receive-entry', (event, entry) => {
+    const {
+      sgv,
+      date
+    } = entry
+    tray.setTitle(`${(sgv * 0.0555).toFixed(1)} mmol/L`)
+    tray.setToolTip('更新于:' + moment(date).format('YYYY-MM-DD HH:mm'))
+  })
+}
+
+nativeTheme.on('updated', () => tray.setImage(getTrayIcon()))
+
+function getTrayIcon (isDark = nativeTheme.shouldUseDarkColors) {
+  const image = nativeImage.createFromPath(
+    path.join(__dirname, `../public/assets/tray_icon${isDark ? '_dark' : ''}.png`)
+  )
+  return image.resize({
+    width: 16,
+    height: 16
+  })
 }
 
 const showWindow = () => {
