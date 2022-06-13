@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, BrowserWindow, nativeImage, protocol, Tray, ipcMain, nativeTheme } from 'electron'
+import { app, BrowserWindow, nativeImage, protocol, Tray, ipcMain, nativeTheme, Menu } from 'electron'
 import moment from 'moment'
 import path from 'path'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
@@ -9,6 +9,86 @@ import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 let win, tray
+
+const template = [
+  {
+    label: 'Edit',
+    submenu: [
+      {
+        role: 'undo'
+      },
+      {
+        role: 'redo'
+      },
+      {
+        type: 'separator'
+      },
+      {
+        role: 'cut'
+      },
+      {
+        role: 'copy'
+      },
+      {
+        role: 'paste'
+      }
+    ]
+  },
+
+  {
+    label: 'View',
+    submenu: [
+      {
+        role: 'reload'
+      },
+      {
+        role: 'toggledevtools'
+      },
+      {
+        type: 'separator'
+      },
+      {
+        role: 'resetzoom'
+      },
+      {
+        role: 'zoomin'
+      },
+      {
+        role: 'zoomout'
+      },
+      {
+        type: 'separator'
+      },
+      {
+        role: 'togglefullscreen'
+      }
+    ]
+  },
+
+  {
+    role: 'window',
+    submenu: [
+      {
+        role: 'minimize'
+      },
+      {
+        role: 'close'
+      }
+    ]
+  },
+
+  {
+    role: 'help',
+    submenu: [
+      {
+        label: 'Learn More'
+      }
+    ]
+  }
+]
+
+const menu = Menu.buildFromTemplate(template)
+Menu.setApplicationMenu(menu)
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
@@ -25,7 +105,6 @@ function createTray () {
   tray = new Tray(getTrayIcon())
   tray.setToolTip('Nightscount')
   tray.setTitle('6.4mmol/l')
-  tray.on('right-click', toggleWindow)
   tray.on('double-click', toggleWindow)
   tray.on('click', function (event) {
     toggleWindow()
@@ -35,6 +114,14 @@ function createTray () {
       win.openDevTools({ mode: 'detach' })
     }
   })
+  var contextMenu = Menu.buildFromTemplate([
+    { label: '设置' },
+    {
+      label: '退出',
+      click: function () { console.log('close clicked') }
+    }
+  ])
+  tray.setContextMenu(contextMenu)
 }
 
 const toggleWindow = () => {
