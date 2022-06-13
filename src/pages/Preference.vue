@@ -1,16 +1,18 @@
 <template>
-  <div id="app">
-    <router-view/>
+  <div>
+    Preference
   </div>
 </template>
+
 <script>
 import { Component, Vue } from 'vue-property-decorator'
 
-@Component({})
-export default class App extends Vue {
+export default @Component({})
+class Preference extends Vue {
 
 }
 </script>
+
 <style lang="scss" scoped>
 
 </style>
