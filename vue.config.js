@@ -7,7 +7,7 @@ module.exports = defineConfig({
       entry: 'src/pages/main.js',
       template: 'public/index.html',
       filename: 'index.html',
-      title: 'Index Page',
+      title: 'Entries Page',
       chunks: ['chunk-vendors', 'chunk-common', 'index']
     },
     preference: {

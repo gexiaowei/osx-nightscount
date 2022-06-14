@@ -2670,6 +2670,11 @@ boolean@^3.0.1:
   resolved "https://registry.npmmirror.com/boolean/-/boolean-3.2.0.tgz#9e5294af4e98314494cbb17979fa54ca159f116b"
   integrity sha512-d0II/GO9uf9lfUHH2BQsjxzRJZBdsjgsBiW4BvhWk/3qoKwQFjIDVN19PfX8F2D/r9PCMTtLWjYVCFrpeYUzsw==
 
+bootstrap-4-grid@^3.4.0:
+  version "3.4.0"
+  resolved "https://registry.npmmirror.com/bootstrap-4-grid/-/bootstrap-4-grid-3.4.0.tgz#62769a992484b9338a0e7219842c90aa70e62f54"
+  integrity sha512-0bemukOEqWgO3Fd1SPFd2yUTEuqLBsPOfX7haNTw4iAbZAqW8doSbqu7VBo1sKBP73mAJMLquIgGCRVBPTDZ8A==
+
 boxen@^5.0.0:
   version "5.1.2"
   resolved "https://registry.npmmirror.com/boxen/-/boxen-5.1.2.tgz#788cb686fc83c1f486dfa8a40c68fc2b831d2b50"
@@ -7057,7 +7062,7 @@ module-alias@^2.2.2:
   resolved "https://registry.npmmirror.com/module-alias/-/module-alias-2.2.2.tgz#151cdcecc24e25739ff0aa6e51e1c5716974c0e0"
   integrity sha512-A/78XjoX2EmNvppVWEhM2oGk3x4lLxnkEA4jTbaK97QKSDjkIoOsKQlfylt/d3kKKi596Qy3NP5XrXJ6fZIC9Q==
 
-moment@^2.29.3:
+moment@^2.19.2, moment@^2.29.3:
   version "2.29.3"
   resolved "https://registry.npmmirror.com/moment/-/moment-2.29.3.tgz#edd47411c322413999f7a5940d526de183c031f3"
   integrity sha512-c6YRvhEo//6T2Jz/vVtYzqBzwvPT95JBQ+smCytzf7c50oMZRsR/a4w88aD34I+/QVSfnoAnSBFPJHItlOMJVw==
@@ -8443,6 +8448,11 @@ regjsparser@^0.8.2:
   integrity sha512-J3LABycON/VNEu3abOviqGHuB/LOtOQj8SKmfP9anY5GfAVw/SPjwzSjxGjbZXIxbGfqTHtJw58C2Li/WkStmA==
   dependencies:
     jsesc "~0.5.0"
+
+regression@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.npmmirror.com/regression/-/regression-2.0.1.tgz#8d29c3e8224a10850c35e337e85a8b2fac3b0c87"
+  integrity sha512-A4XYsc37dsBaNOgEjkJKzfJlE394IMmUPlI/p3TTI9u3T+2a+eox5Pr/CPUqF0eszeWZJPAc6QkroAhuUpWDJQ==
 
 relateurl@^0.2.7:
   version "0.2.7"
@@ -10081,6 +10091,13 @@ vue-loader@^17.0.0:
     chalk "^4.1.0"
     hash-sum "^2.0.0"
     loader-utils "^2.0.0"
+
+vue-moment@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.npmmirror.com/vue-moment/-/vue-moment-4.1.0.tgz#092a8ff723a96c6f85a0a8e23ad30f0bf320f3b0"
+  integrity sha512-Gzisqpg82ItlrUyiD9d0Kfru+JorW2o4mQOH06lEDZNgxci0tv/fua1Hl0bo4DozDV2JK1r52Atn/8QVCu8qQw==
+  dependencies:
+    moment "^2.19.2"
 
 vue-property-decorator@^9.1.2:
   version "9.1.2"

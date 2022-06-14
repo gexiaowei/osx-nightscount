@@ -1,4 +1,19 @@
 html, body {
   margin: 0;
   padding: 0;
+  font-family: "PingFang SC", "Helvetica Neue", Helvetica, "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+  font-size: 16px;
+}
+
+:root {
+  --danger-color: #F56C6C;
+  --success-color: #67C23A;
+  --warning-color: #E6A23C;
+  --info-color: #909399;
+  --text-primary-color: #303133;
+  --text-regular-color: #606266;
+}
+
+.flex-1 {
+  flex: 1;
 }
