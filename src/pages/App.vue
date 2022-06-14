@@ -7,7 +7,17 @@
             {{ current.sgv | format_unit }}
           </div>
           <div>
-            <img class="arrow" src="@/assets/icons/arrow-down.svg" alt="">
+            <img v-if="['SingleUp','DoubleUp','TripleUp'].includes(current.direction)" class="arrow"
+                 src="@/assets/icons/arrow-up.svg" alt="">
+            <img v-else-if="['FortyFiveUp'].includes(current.direction)" class="arrow"
+                 src="@/assets/icons/arrow-up-right.svg" alt="">
+            <img v-else-if="['FortyFiveDown'].includes(current.direction)" class="arrow"
+                 src="@/assets/icons/arrow-down-right.svg" alt="">
+            <img v-else-if="['SingleDown','DoubleDown','TripleDown'].includes(current.direction)" class="arrow"
+                 src="@/assets/icons/arrow-down.svg" alt="">
+            <img v-else-if="['RATE OUT OF RANGE'].includes(current.direction)" class="arrow"
+                 src="@/assets/icons/arrows-from-line.svg" alt="">
+            <img v-else class="arrow" src="@/assets/icons/arrow-right.svg" alt="">
           </div>
         </div>
         <div class="d-flex align-items-center justify-content-center">
@@ -109,7 +119,7 @@ use([
   },
   filters: {
     format_unit (value) {
-      return (Math.floor(value * 0.555) / 10).toFixed(1)
+      return (Math.round(value * 0.555) / 10).toFixed(1)
     }
   }
 })
@@ -220,28 +230,36 @@ export default class Chart extends Vue {
                 type: 'dashed',
                 width: 1
               },
+              tooltip: {
+                formatter: '{b}: {c}'
+              },
               data: [
                 {
+                  name: '极高',
                   yAxis: this.value.urgent_high,
                   lineStyle: { color: '#F56C6C' },
                   label: { color: '#F56C6C' }
                 },
                 {
+                  name: '高',
                   yAxis: this.value.high,
                   lineStyle: { color: '#E6A23C' },
                   label: { color: '#E6A23C' }
                 },
                 {
+                  name: '目标值',
                   yAxis: this.value.target,
                   lineStyle: { color: '#67C23A' },
                   label: { color: '#67C23A' }
                 },
                 {
+                  name: '低',
                   yAxis: this.value.low,
                   lineStyle: { color: '#E6A23C' },
                   label: { color: '#E6A23C' }
                 },
                 {
+                  name: '极低',
                   yAxis: this.value.urgent_low,
                   lineStyle: { color: '#F56C6C' },
                   label: { color: '#F56C6C' }
