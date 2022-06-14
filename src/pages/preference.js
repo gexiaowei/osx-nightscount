@@ -1,6 +1,7 @@
 import Vue from 'vue'
-import App from './App.vue'
+import App from './Preference.vue'
 
+import 'bootstrap-4-grid/scss/grid.scss'
 import '@/styles/app.scss'
 
 Vue.config.productionTip = false

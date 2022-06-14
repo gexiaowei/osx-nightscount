@@ -49,8 +49,9 @@ app.on('ready', async () => {
 async function createWindow () {
   // Create the browser window.
   win = new BrowserWindow({
-    width: 800,
-    height: 700,
+    width: 370,
+    height: 330,
+    resizable: false,
     webPreferences: {
 
       // Use pluginOptions.nodeIntegration, leave this alone
@@ -62,12 +63,13 @@ async function createWindow () {
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
-    await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
+    console.log(process.env.WEBPACK_DEV_SERVER_URL + '/preference.html')
+    await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL + 'preference.html')
     if (!process.env.IS_TEST) win.webContents.openDevTools()
   } else {
     createProtocol('app')
     // Load the index.html when not in development
-    win.loadURL('app://./index.html')
+    win.loadURL('app://./preference.html')
   }
 }
 
@@ -140,12 +142,16 @@ async function getDateEntries (date) {
 
 async function getCurrentUpdateEntries () {
   const currentDate = moment().format('YYYY-MM-DD')
-  const { data } = await getEntries({
-    'find[date][$gt]': entries[currentDate][0].date
-  })
-  if (data.length) {
-    entries[currentDate] = [...data, ...entries[currentDate]]
-    updateEntries(entries[currentDate])
+  if (entries[currentDate] && entries[currentDate].length) {
+    const { data } = await getEntries({
+      'find[date][$gt]': entries[currentDate][0].date
+    })
+    if (data.length) {
+      entries[currentDate] = [...data, ...entries[currentDate]]
+      updateEntries(entries[currentDate])
+    }
+  } else {
+    await getDateEntries()
   }
 }
 
@@ -165,8 +171,12 @@ async function loop () {
   } catch (e) {
     console.log('初始化数据失败', e)
   } finally {
-    setInterval(() => {
-      getCurrentUpdateEntries()
+    setInterval(async () => {
+      try {
+        await getCurrentUpdateEntries()
+      } catch (e) {
+        console.log('获取数据失败', e)
+      }
     }, 60 * 1000)
   }
 }

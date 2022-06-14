@@ -22,13 +22,13 @@
         </div>
         <div class="d-flex align-items-center justify-content-center">
           <div class="d-flex align-items-center pill">
-            <div class="value">{{ current.offset | format_unit }}</div>
+            <div class="value d-flex align-items-center"><span v-if="current.offset>=0">+</span>{{ current.offset | format_unit }}</div>
             <div class="unit">mmol/L</div>
           </div>
         </div>
       </div>
       <div>
-        <div class="time">{{ current.date | moment('HH:mm') }}</div>
+        <div class="time">{{ +current.date | moment('HH:mm') }}</div>
         <div class="d-flex align-items-center justify-content-center">
           <div class="d-flex align-items-center pill">
             <div class="value">{{ minuteOffset }}</div>
@@ -146,11 +146,11 @@ export default class Chart extends Vue {
   }
 
   get average () {
-    return _.chain(this.entries).map('sgv').mean().value()
+    return this.entries.length ? _.chain(this.entries).map('sgv').mean().value() : 0
   }
 
   get HbA1c () {
-    return (Math.round(10 * (_.chain(this.entries).map('sgv').mean().value() + 46.7) / 28.7) / 10).toFixed(1)
+    return this.entries.length ? (Math.round(10 * (_.chain(this.entries).map('sgv').mean().value() + 46.7) / 28.7) / 10).toFixed(1) : 0
   }
 
   get distributed () {

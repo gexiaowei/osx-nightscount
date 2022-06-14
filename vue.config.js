@@ -14,7 +14,7 @@ module.exports = defineConfig({
       entry: 'src/pages/preference.js',
       template: 'public/preference.html',
       filename: 'preference.html',
-      title: 'Preference Page',
+      title: '偏好设置',
       chunks: ['preference-chunk-vendors', 'preference-chunk-common', 'preference']
     }
   },
