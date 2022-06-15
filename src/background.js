@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, protocol, Menu, BrowserWindow, ipcMain } from 'electron'
+import { app, protocol, Menu, BrowserWindow, ipcMain, nativeTheme } from 'electron'
 import { menubar } from 'menubar'
 import moment from 'moment'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
@@ -12,9 +12,16 @@ import { getUnitLabel, sgvToUnit } from '@/utils/blood'
 import _ from 'lodash'
 import { DEFAULT_VALUE } from '@/config'
 
+const isDevelopment = process.env.NODE_ENV !== 'production'
+
 let value = store.get('value', _.cloneDeep(DEFAULT_VALUE))
 
 let mb, win, interval_id
+const entries = {}
+
+app.setLoginItemSettings({
+  openAsHidden: true
+})
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -27,7 +34,6 @@ protocol.registerSchemesAsPrivileged([
 ])
 
 app.on('ready', async () => {
-  const isDevelopment = process.env.NODE_ENV !== 'production'
   if (isDevelopment && !process.env.IS_TEST) {
     // Install Vue Devtools
     try {
@@ -36,80 +42,88 @@ app.on('ready', async () => {
       console.error('Vue Devtools failed to install:', e.toString())
     }
   }
-  await createWindow()
-  createMenu()
-  ipcMain.on('entries-refresh', () => {
-    updateEntries()
-  })
+
+  initEvent()
+  await createMenu()
+  await createPreferenceWindow()
   loop().then(() => {
     console.log('成功获取远程数据')
   })
 })
 
-async function createWindow () {
-  // Create the browser window.
-  win = new BrowserWindow({
-    width: 350,
-    height: 400,
-    resizable: false,
-    minimizable: false,
-    webPreferences: {
-
-      // Use pluginOptions.nodeIntegration, leave this alone
-      // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
-      nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
-      contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION
-    }
-  })
-
-  if (process.env.WEBPACK_DEV_SERVER_URL) {
-    // Load the url of the dev server if in development mode
-    console.log(process.env.WEBPACK_DEV_SERVER_URL + '/preference.html')
-    await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL + 'preference.html')
-    if (!process.env.IS_TEST) win.webContents.openDevTools()
-  } else {
-    createProtocol('app')
-    // Load the index.html when not in development
-    win.loadURL('app://./preference.html')
-  }
-}
-
-function createMenu () {
-  let uri
-  if (process.env.WEBPACK_DEV_SERVER_URL) {
-    uri = process.env.WEBPACK_DEV_SERVER_URL
-  } else {
-    createProtocol('app')
-    uri = 'app://./index.html'
-  }
-  mb = menubar({
-    index: uri,
-    icon: path.resolve(__dirname, '../assets/icons/trayIconTemplate.png'),
-    browserWindow: {
-      width: 800,
-      height: 700,
+async function createPreferenceWindow () {
+  if (!win) {
+    win = new BrowserWindow({
+      width: 430,
+      height: 400,
       resizable: false,
+      minimizable: false,
       webPreferences: {
         nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
         contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION
       }
-    }
-  })
+    })
 
-  mb.on('ready', () => {
-    mb.tray.on('right-click', () => {
-      const contextMenu = Menu.buildFromTemplate([
-        {
-          label: '设置'
-        },
-        {
-          label: '退出',
-          click: () => {
-            app.quit()
-          }
+    if (process.env.WEBPACK_DEV_SERVER_URL) {
+      await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL + 'preference.html')
+      // if (!process.env.IS_TEST) win.webContents.openDevTools()
+    } else {
+      createProtocol('app')
+      win.loadURL('app://./preference.html')
+    }
+
+    win.on('closed', function (evt) {
+      win = null
+    })
+  }
+  return win
+}
+
+function createMenu () {
+  return new Promise(resolve => {
+    let uri
+    if (process.env.WEBPACK_DEV_SERVER_URL) {
+      uri = process.env.WEBPACK_DEV_SERVER_URL
+    } else {
+      createProtocol('app')
+      uri = 'app://./index.html'
+    }
+    mb = menubar({
+      index: uri,
+      preloadWindow: true,
+      icon: path.resolve(__dirname, isDevelopment ? '../public/assets/icons/trayIconTemplate.png' : './assets/icons/trayIconTemplate.png'),
+      browserWindow: {
+        width: 800,
+        height: 700,
+        resizable: false,
+        webPreferences: {
+          nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
+          contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION
         }
-      ])
-      mb.tray.popUpContextMenu(contextMenu)
+      }
+    })
+
+    mb.on('ready', () => {
+      mb.tray.on('right-click', () => {
+        const contextMenu = Menu.buildFromTemplate([
+          {
+            label: '设置',
+            accelerator: 'CommandOrControl+;',
+            click: async () => {
+              await createPreferenceWindow()
+            }
+          },
+          {
+            label: '退出',
+            accelerator: 'CommandOrControl+q',
+            click: () => {
+              app.quit()
+            }
+          }
+        ])
+        mb.tray.popUpContextMenu(contextMenu)
+      })
+      resolve(mb)
     })
   })
 }
@@ -126,8 +140,6 @@ function setTrayInformation () {
     mb.tray.setToolTip('更新于:' + moment(date).format('YYYY-MM-DD HH:mm'))
   }
 }
-
-const entries = {}
 
 async function getDateEntries (date) {
   const start = (date ? moment(date) : moment()).startOf('day').format('x')
@@ -166,19 +178,45 @@ function updateEntries (data) {
   }
 }
 
-ipcMain.handle('setSetting', (event, setting) => {
-  store.set(setting.key, setting.value)
-  if (setting.key === 'value') {
-    value = setting.value
+function initEvent () {
+  ipcMain.on('entries-refresh', () => {
     updateEntries()
-  }
-  if (setting.key === 'server') {
-    interval_id && clearInterval(interval_id)
-    loop().then(() => {
-      console.log('重设服务器，获取数据成功')
-    })
-  }
-})
+  })
+
+  ipcMain.handle('setSetting', (event, setting) => {
+    store.set(setting.key, setting.value)
+    if (setting.key === 'value') {
+      value = setting.value
+      updateEntries()
+    }
+    if (setting.key === 'server') {
+      interval_id && clearInterval(interval_id)
+      loop().then(() => {
+        console.log('重设服务器，获取数据成功')
+      })
+    }
+    if (setting.key === 'config') {
+      const { auto } = setting.value
+      app.setLoginItemSettings({
+        openAtLogin: auto
+      })
+    }
+  })
+
+  ipcMain.handle('dark-mode:toggle', () => {
+    if (nativeTheme.shouldUseDarkColors) {
+      nativeTheme.themeSource = 'light'
+    } else {
+      nativeTheme.themeSource = 'dark'
+    }
+    console.log(nativeTheme.shouldUseDarkColors)
+    return nativeTheme.shouldUseDarkColors
+  })
+
+  ipcMain.handle('dark-mode:system', () => {
+    nativeTheme.themeSource = 'system'
+  })
+}
 
 async function loop () {
   try {

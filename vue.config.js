@@ -20,7 +20,14 @@ module.exports = defineConfig({
   },
   pluginOptions: {
     electronBuilder: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      builderOptions: {
+        appId: 'com.cos66.cgm_monitor',
+        productName: 'CGM Monitor',
+        mac: {
+          icon: 'build/icons/icon.icns'
+        }
+      }
     }
   }
 })

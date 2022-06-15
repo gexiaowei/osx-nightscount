@@ -1,8 +1,22 @@
 import Vue from 'vue'
 import App from './Preference.vue'
-import { Tabs, TabPane, Form, FormItem, Input, InputNumber, Select, Option } from 'element-ui'
+import {
+  Tabs,
+  TabPane,
+  Form,
+  FormItem,
+  Input,
+  InputNumber,
+  Select,
+  Option,
+  Switch,
+  Radio,
+  RadioGroup
+} from 'element-ui'
 
+import 'element-ui/lib/theme-chalk/index.css'
 import 'bootstrap-4-grid/scss/grid.scss'
+import '@/styles/preference.scss'
 import '@/styles/app.scss'
 
 Vue.prototype.$ELEMENT = {
@@ -17,6 +31,9 @@ Vue.use(Input)
 Vue.use(InputNumber)
 Vue.use(Select)
 Vue.use(Option)
+Vue.use(Switch)
+Vue.use(Radio)
+Vue.use(RadioGroup)
 
 Vue.config.productionTip = false
 

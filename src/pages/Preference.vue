@@ -14,9 +14,49 @@
         </div>
         <div class="setting-container">
           <el-form
+            ref="config"
+            :model="config"
+            label-position="left"
+            label-width="100px"
+          >
+            <el-form-item label="开机启动">
+              <el-switch
+                v-model="config.auto"
+              />
+            </el-form-item>
+            <el-form-item label="主题颜色">
+              <el-radio-group v-model="config.theme">
+                <el-radio label="dark">
+                  深色
+                </el-radio>
+                <el-radio label="white">
+                  浅色
+                </el-radio>
+                <el-radio label="system">
+                  系统
+                </el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-form>
+        </div>
+      </el-tab-pane>
+      <el-tab-pane>
+        <div
+          slot="label"
+          class="tab-item"
+        >
+          <img
+            src="@/assets/icons/droplet-degree.svg"
+            alt=""
+          >
+          血糖
+        </div>
+        <div class="setting-container">
+          <el-form
             ref="value"
             :model="value"
             label-width="100px"
+            label-position="left"
           >
             <el-form-item label="血糖单位">
               <el-select
@@ -160,6 +200,11 @@ class Preference extends Vue {
     url: ''
   }
 
+  config = {
+    auto: false,
+    theme: 'system'
+  }
+
   changeUnit () {
     const { unit } = this.value
     this.value.urgent_high = convertUnits(this.value.urgent_high, unit)
@@ -167,10 +212,19 @@ class Preference extends Vue {
     this.value.low = convertUnits(this.value.low, unit)
     this.value.urgent_low = convertUnits(this.value.urgent_low, unit)
     this.value.target = convertUnits(this.value.target, unit)
+    this.handleValueSettingChange()
+  }
+
+  @Watch('config', { deep: true })
+  handleConfigChange (value) {
+    ipcRenderer.invoke('setSetting', {
+      key: 'config',
+      value
+    })
   }
 
   @Watch('value', { deep: true })
-  handleValueSettingChange (value) {
+  handleValueSettingChange () {
     const {
       unit,
       urgent_high,
@@ -178,7 +232,7 @@ class Preference extends Vue {
       low,
       urgent_low,
       target
-    } = value
+    } = this.value
     ipcRenderer.invoke('setSetting', {
       key: 'value',
       value: {
@@ -228,6 +282,10 @@ class Preference extends Vue {
     if (server) {
       this.server = server
     }
+    const config = store.get('config')
+    if (config) {
+      this.config = config
+    }
   }
 }
 </script>
@@ -245,6 +303,10 @@ class Preference extends Vue {
   img {
     height: 1rem;
     margin-right: 0.5rem;
+
+    @media (prefers-color-scheme: dark) {
+      filter: invert(100%) sepia(0%) saturate(2%) hue-rotate(236deg) brightness(104%) contrast(101%);
+    }
   }
 }
 

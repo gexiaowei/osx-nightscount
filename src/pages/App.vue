@@ -122,37 +122,37 @@
       />
     </div>
     <div class="d-flex statistics-container">
-      <div class="item ">
+      <div class="item">
         <div>Low</div>
         <div class="value low">
           {{ distributed.low }}
         </div>
       </div>
-      <div class="item ">
+      <div class="item">
         <div>In Range</div>
         <div class="value normal">
           {{ distributed.normal }}
         </div>
       </div>
-      <div class="item ">
+      <div class="item">
         <div>High</div>
         <div class="value high">
           {{ distributed.high }}
         </div>
       </div>
-      <div class="item ">
+      <div class="item">
         <div>Average</div>
         <div class="value">
           {{ average | format_unit(value.unit) }}{{ value.unit|get_unit_label }}
         </div>
       </div>
-      <div class="item ">
+      <div class="item">
         <div>HbA1c</div>
         <div class="value">
           {{ HbA1c }}%
         </div>
       </div>
-      <div class="item ">
+      <div class="item">
         <div>CV</div>
         <div class="value">
           0%
@@ -314,31 +314,31 @@ export default class Chart extends Vue {
               data: [
                 {
                   name: '极高',
-                  yAxis: this.value.urgent_high,
+                  yAxis: sgvToUnit(this.value.urgent_high, this.value.unit),
                   lineStyle: { color: '#F56C6C' },
                   label: { color: '#F56C6C' }
                 },
                 {
                   name: '高',
-                  yAxis: this.value.high,
+                  yAxis: sgvToUnit(this.value.high, this.value.unit),
                   lineStyle: { color: '#E6A23C' },
                   label: { color: '#E6A23C' }
                 },
                 {
                   name: '目标值',
-                  yAxis: this.value.target,
+                  yAxis: sgvToUnit(this.value.target, this.value.unit),
                   lineStyle: { color: '#67C23A' },
                   label: { color: '#67C23A' }
                 },
                 {
                   name: '低',
-                  yAxis: this.value.low,
+                  yAxis: sgvToUnit(this.value.low, this.value.unit),
                   lineStyle: { color: '#E6A23C' },
                   label: { color: '#E6A23C' }
                 },
                 {
                   name: '极低',
-                  yAxis: this.value.urgent_low,
+                  yAxis: sgvToUnit(this.value.urgent_low, this.value.unit),
                   lineStyle: { color: '#F56C6C' },
                   label: { color: '#F56C6C' }
                 }
@@ -450,11 +450,18 @@ export default class Chart extends Vue {
 
       .unit {
         padding: 0 0.25rem;
+        @media (prefers-color-scheme: dark) {
+          color: white;
+        }
 
         img {
           height: 1.4rem;
           display: flex;
           filter: invert(17%) sepia(7%) saturate(265%) hue-rotate(182deg) brightness(95%) contrast(92%);
+
+          @media (prefers-color-scheme: dark) {
+            filter: invert(100%) sepia(0%) saturate(2%) hue-rotate(236deg) brightness(104%) contrast(101%) !important;
+          }
         }
       }
     }
@@ -480,6 +487,10 @@ export default class Chart extends Vue {
         &.low {
           color: var(--danger-color)
         }
+      }
+
+      @media (prefers-color-scheme: dark) {
+        color: white;
       }
     }
   }
