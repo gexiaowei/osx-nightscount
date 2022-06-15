@@ -1,7 +1,6 @@
 'use strict'
 
 import { app, protocol, Menu, BrowserWindow, ipcMain } from 'electron'
-// ipcMain, ipcRenderer
 import { menubar } from 'menubar'
 import moment from 'moment'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
@@ -49,9 +48,9 @@ app.on('ready', async () => {
 async function createWindow () {
   // Create the browser window.
   win = new BrowserWindow({
-    width: 370,
-    height: 330,
-    resizable: false,
+    width: 350,
+    height: 400,
+    // resizable: false,
     webPreferences: {
 
       // Use pluginOptions.nodeIntegration, leave this alone
@@ -158,10 +157,10 @@ async function getCurrentUpdateEntries () {
 function updateEntries (data) {
   if (data) {
     setTrayInformation()
-    win.webContents.send('entries-update', data)
+    mb.window && mb.window.webContents.send('entries-update', data)
   } else {
     const currentDate = moment().format('YYYY-MM-DD')
-    win.webContents.send('entries-update', entries[currentDate])
+    mb.window && mb.window.webContents.send('entries-update', entries[currentDate])
   }
 }
 
