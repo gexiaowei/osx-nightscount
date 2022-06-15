@@ -7,7 +7,7 @@
           class="tab-item"
         >
           <img
-            src="@/assets/icons/input-numeric.svg"
+            src="@/assets/icons/brush.svg"
             alt=""
           >
           通用
@@ -78,42 +78,47 @@
             <el-form-item label="血糖极高值">
               <el-input-number
                 v-model="value.urgent_high"
-                class="w-100"
-                :step="0.1"
+                class="port-input w-100"
+                controls-position="right"
+                :step="step"
               />
             </el-form-item>
             <el-form-item label="血糖高值">
               <el-input-number
                 v-model="value.high"
-                class="w-100"
-                :step="0.1"
+                class="port-input w-100"
+                controls-position="right"
+                :step="step"
                 :max="value.urgent_high"
               />
             </el-form-item>
             <el-form-item label="血糖低值">
               <el-input-number
                 v-model="value.low"
-                class="w-100"
-                :step="0.1"
+                class="port-input w-100"
+                controls-position="right"
+                :step="step"
                 :max="value.high"
               />
             </el-form-item>
             <el-form-item
-              :step="0.1"
+              :step="step"
               label="血糖极低值"
             >
               <el-input-number
                 v-model="value.urgent_low"
-                class="w-100"
-                :step="0.1"
+                class="port-input w-100"
+                controls-position="right"
+                :step="step"
                 :max="value.low"
               />
             </el-form-item>
             <el-form-item label="血糖目标值">
               <el-input-number
                 v-model="value.target"
-                class="w-100"
-                :step="0.1"
+                class="port-input w-100"
+                controls-position="right"
+                :step="step"
               />
             </el-form-item>
           </el-form>
@@ -253,6 +258,10 @@ class Preference extends Vue {
   config = {
     auto: false,
     theme: 'system'
+  }
+
+  get step () {
+    return this.value.unit === 'mg/dl' ? 1 : 0.1
   }
 
   changeUnit () {

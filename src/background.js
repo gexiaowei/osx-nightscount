@@ -6,7 +6,7 @@ import moment from 'moment'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import path from 'path'
 import { getEntries } from '@/api/entries'
-import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
+// import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 import store from '@/utils/store'
 import { getUnitLabel, sgvToUnit } from '@/utils/blood'
 import _ from 'lodash'
@@ -37,14 +37,14 @@ protocol.registerSchemesAsPrivileged([
 ])
 
 app.on('ready', async () => {
-  if (isDevelopment && !process.env.IS_TEST) {
-    // Install Vue Devtools
-    try {
-      await installExtension(VUEJS_DEVTOOLS)
-    } catch (e) {
-      console.error('Vue Devtools failed to install:', e.toString())
-    }
-  }
+  // if (isDevelopment && !process.env.IS_TEST) {
+  //   // Install Vue Devtools
+  //   try {
+  //     await installExtension(VUEJS_DEVTOOLS)
+  //   } catch (e) {
+  //     console.error('Vue Devtools failed to install:', e.toString())
+  //   }
+  // }
 
   initEvent()
   await createMenu()
@@ -69,7 +69,7 @@ async function createPreferenceWindow () {
 
     if (process.env.WEBPACK_DEV_SERVER_URL) {
       await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL + 'preference.html')
-      if (!process.env.IS_TEST) win.webContents.openDevTools()
+      // if (!process.env.IS_TEST) win.webContents.openDevTools()
     } else {
       createProtocol('app')
       win.loadURL('app://./preference.html')
