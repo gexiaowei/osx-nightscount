@@ -293,6 +293,7 @@ class Preference extends Vue {
 <style lang="scss" scoped>
 .preference-container {
   font-size: 0.875rem;
+  height: 100vh;
 }
 
 .tab-item {
@@ -316,6 +317,10 @@ class Preference extends Vue {
 
 .logo {
   width: 10rem;
+
+  @media (prefers-color-scheme: dark) {
+    filter: invert(100%) sepia(0%) saturate(2%) hue-rotate(236deg) brightness(104%) contrast(101%);
+  }
 }
 
 .server-label {

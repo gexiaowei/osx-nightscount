@@ -1,3 +1,4 @@
 @media (prefers-color-scheme: dark) {
-  //@import "~element-theme-dark";
+  $--font-path: '~element-theme-dark/lib/fonts';
+  @import "~element-theme-dark";
 }
