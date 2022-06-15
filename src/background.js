@@ -13,12 +13,9 @@ import _ from 'lodash'
 import { DEFAULT_VALUE } from '@/config'
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
-
 let value = store.get('value', _.cloneDeep(DEFAULT_VALUE))
+
 const config = store.get('config')
-if (config) {
-  nativeTheme.themeSource = config.theme
-}
 let mb, win, interval_id
 const entries = {}
 
@@ -48,7 +45,10 @@ app.on('ready', async () => {
 
   initEvent()
   await createMenu()
-  await createPreferenceWindow()
+  // await createPreferenceWindow()
+  if (config) {
+    nativeTheme.themeSource = config.theme
+  }
   loop().then(() => {
     console.log('成功获取远程数据')
   })
@@ -187,26 +187,33 @@ function initEvent () {
   })
 
   ipcMain.handle('setSetting', (event, setting) => {
-    store.set(setting.key, setting.value)
-    if (setting.key === 'value') {
-      value = setting.value
-      updateEntries()
-    }
-    if (setting.key === 'server') {
-      interval_id && clearInterval(interval_id)
-      loop().then(() => {
-        console.log('重设服务器，获取数据成功')
-      })
-    }
-    if (setting.key === 'config') {
-      const {
-        auto,
-        theme
-      } = setting.value
-      app.setLoginItemSettings({
-        openAtLogin: auto
-      })
-      nativeTheme.themeSource = theme
+    if (setting) {
+      try {
+        store.set(setting.key, setting.value)
+        if (setting.key === 'value') {
+          value = setting.value
+          updateEntries()
+        }
+        if (setting.key === 'server') {
+          interval_id && clearInterval(interval_id)
+          loop().then(() => {
+            console.log('重设服务器，获取数据成功')
+          })
+        }
+        if (setting.key === 'config') {
+          const {
+            auto,
+            theme
+          } = setting.value
+          app.setLoginItemSettings({
+            openAtLogin: auto
+          })
+          nativeTheme.themeSource = theme
+        }
+      } catch (e) {
+        store.delete(setting.key)
+        console.log('设置失败', setting)
+      }
     }
   })
 }
