@@ -5,6 +5,7 @@ const request = axios.create()
 
 request.interceptors.request.use(function (config) {
   let baseUrl = store.get('server.url')
+  const proxy = store.get('proxy')
   if (!baseUrl) {
     throw new Error('未设置Nightscount服务器地址')
   } else {
@@ -13,6 +14,13 @@ request.interceptors.request.use(function (config) {
     }
     if (baseUrl.endsWith('/')) {
       baseUrl = baseUrl.substr(0, baseUrl.length - 1)
+    }
+    if (proxy && proxy.enable) {
+      config.proxy = {
+        protocol: proxy.protocol,
+        host: proxy.host,
+        port: proxy.port
+      }
     }
   }
   config.baseURL = `${baseUrl}/api/v1/`

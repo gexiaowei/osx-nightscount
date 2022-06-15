@@ -15,7 +15,7 @@ import { DEFAULT_VALUE } from '@/config'
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 let value = store.get('value', _.cloneDeep(DEFAULT_VALUE))
-let config = store.get('config')
+const config = store.get('config')
 if (config) {
   nativeTheme.themeSource = config.theme
 }

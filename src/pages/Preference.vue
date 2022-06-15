@@ -134,23 +134,62 @@
           <el-form
             ref="server"
             :model="server"
-            label-width="100%"
-            label-position="top"
+            label-width="100px"
+            label-position="left"
           >
-            <el-form-item>
-              <div
-                slot="label"
-                class="text-center d-flex align-items-center server-label"
+            <div
+              class="text-center d-flex align-items-center server-label w-100"
+            >
+              <img
+                src="@/assets/images/logo-nightscout.png"
+                alt=""
               >
-                <img
-                  src="@/assets/images/logo-nightscout.png"
-                  alt=""
-                >
-                <b>NightCount服务器地址</b>
-              </div>
+              <b>NightCount服务器地址</b>
+            </div>
+            <el-form-item
+              label-width="0"
+              class="mt-2"
+            >
               <el-input
                 v-model="server.url"
                 clearable
+              />
+            </el-form-item>
+            <el-form-item
+              label="代理服务器"
+              label-position="left"
+            >
+              <el-switch
+                v-model="proxy.enable"
+              />
+            </el-form-item>
+            <el-form-item label="类型">
+              <el-radio-group
+                v-model="proxy.protocol"
+                :disabled="!proxy.enable"
+              >
+                <el-radio label="http">
+                  Http
+                </el-radio>
+                <el-radio label="socks">
+                  Socks
+                </el-radio>
+              </el-radio-group>
+            </el-form-item>
+            <el-form-item label="主机名">
+              <el-input
+                v-model="proxy.host"
+                :disabled="!proxy.enable"
+                placeholder="主机名"
+              />
+            </el-form-item>
+            <el-form-item label="端口">
+              <el-input-number
+                v-model="proxy.port"
+                :disabled="!proxy.enable"
+                class="port-input w-100"
+                controls-position="right"
+                placeholder="端口"
               />
             </el-form-item>
           </el-form>
@@ -200,6 +239,17 @@ class Preference extends Vue {
     url: ''
   }
 
+  proxy = {
+    enable: false,
+    protocol: 'http',
+    host: '',
+    port: '',
+    auth: {
+      username: '',
+      password: ''
+    }
+  }
+
   config = {
     auto: false,
     theme: 'system'
@@ -213,6 +263,14 @@ class Preference extends Vue {
     this.value.urgent_low = convertUnits(this.value.urgent_low, unit)
     this.value.target = convertUnits(this.value.target, unit)
     this.handleValueSettingChange()
+  }
+
+  @Watch('proxy', { deep: true })
+  handleProxyChange (value) {
+    ipcRenderer.invoke('setSetting', {
+      key: 'proxy',
+      value
+    })
   }
 
   @Watch('config', { deep: true })
@@ -286,6 +344,11 @@ class Preference extends Vue {
     if (config) {
       this.config = config
     }
+    const proxy = store.get('proxy')
+    console.log(proxy)
+    if (proxy) {
+      this.proxy = proxy
+    }
   }
 }
 </script>
@@ -327,6 +390,12 @@ class Preference extends Vue {
   img {
     width: 1.5rem;
     margin-right: .25rem;
+  }
+}
+
+.port-input {
+  ::v-deep input {
+    text-align: left !important;
   }
 }
 
