@@ -4,48 +4,111 @@
       <div class="summary text-center">
         <div class=" d-flex align-items-center">
           <div class="current">
-            {{ current.sgv | format_unit }}
+            {{ current.sgv | format_unit(value.unit) }}
           </div>
           <div>
-            <img v-if="['SingleUp','DoubleUp','TripleUp'].includes(current.direction)" class="arrow"
-                 src="@/assets/icons/arrow-up.svg" alt="">
-            <img v-else-if="['FortyFiveUp'].includes(current.direction)" class="arrow"
-                 src="@/assets/icons/arrow-up-right.svg" alt="">
-            <img v-else-if="['FortyFiveDown'].includes(current.direction)" class="arrow"
-                 src="@/assets/icons/arrow-down-right.svg" alt="">
-            <img v-else-if="['SingleDown','DoubleDown','TripleDown'].includes(current.direction)" class="arrow"
-                 src="@/assets/icons/arrow-down.svg" alt="">
-            <img v-else-if="['RATE OUT OF RANGE'].includes(current.direction)" class="arrow"
-                 src="@/assets/icons/arrows-from-line.svg" alt="">
-            <img v-else class="arrow" src="@/assets/icons/arrow-right.svg" alt="">
+            <img
+              v-if="['SingleUp','DoubleUp','TripleUp'].includes(current.direction)"
+              class="arrow"
+              src="@/assets/icons/arrow-up.svg"
+              alt=""
+            >
+            <img
+              v-else-if="['FortyFiveUp'].includes(current.direction)"
+              class="arrow"
+              src="@/assets/icons/arrow-up-right.svg"
+              alt=""
+            >
+            <img
+              v-else-if="['FortyFiveDown'].includes(current.direction)"
+              class="arrow"
+              src="@/assets/icons/arrow-down-right.svg"
+              alt=""
+            >
+            <img
+              v-else-if="['SingleDown','DoubleDown','TripleDown'].includes(current.direction)"
+              class="arrow"
+              src="@/assets/icons/arrow-down.svg"
+              alt=""
+            >
+            <img
+              v-else-if="['RATE OUT OF RANGE'].includes(current.direction)"
+              class="arrow"
+              src="@/assets/icons/arrows-from-line.svg"
+              alt=""
+            >
+            <img
+              v-else
+              class="arrow"
+              src="@/assets/icons/arrow-right.svg"
+              alt=""
+            >
           </div>
         </div>
         <div class="d-flex align-items-center justify-content-center">
           <div class="d-flex align-items-center pill">
-            <div class="value d-flex align-items-center"><span v-if="current.offset>=0">+</span>{{ current.offset | format_unit }}</div>
-            <div class="unit">mmol/L</div>
+            <div class="value d-flex align-items-center">
+              <span
+                v-if="current.offset>=0"
+              >+</span>{{ current.offset | format_unit(value.unit) }}
+            </div>
+            <div class="unit">
+              {{ value.unit|get_unit_label }}
+            </div>
           </div>
         </div>
       </div>
       <div>
-        <div class="time">{{ +current.date | moment('HH:mm') }}</div>
+        <div class="time">
+          {{ +current.date | moment('HH:mm') }}
+        </div>
         <div class="d-flex align-items-center justify-content-center">
           <div class="d-flex align-items-center pill">
-            <div class="value">{{ minuteOffset }}</div>
-            <div class="unit">分钟前</div>
-          </div>
-          <div class="d-flex align-items-center pill" v-if="device">
-            <div class="value">{{ device.uploader.battery }}%</div>
+            <div class="value">
+              {{ minuteOffset }}
+            </div>
             <div class="unit">
-              <img class="battery-icon" v-if="device.uploader.battery > 85" src="@/assets/icons/battery-full.svg"
-                   alt="">
-              <img class="battery-icon" v-else-if="device.uploader.battery > 65"
-                   src="@/assets/icons/battery-three-quarters.svg" alt="">
-              <img class="battery-icon" v-else-if="device.uploader.battery > 45" src="@/assets/icons/battery-half.svg"
-                   alt="">
-              <img class="battery-icon" v-else-if="device.uploader.battery > 15"
-                   src="@/assets/icons/battery-quarter.svg" alt="">
-              <img class="battery-icon" v-else src="@/assets/icons/battery-low.svg" alt="">
+              分钟前
+            </div>
+          </div>
+          <div
+            v-if="device"
+            class="d-flex align-items-center pill"
+          >
+            <div class="value">
+              {{ device.uploader.battery }}%
+            </div>
+            <div class="unit">
+              <img
+                v-if="device.uploader.battery > 85"
+                class="battery-icon"
+                src="@/assets/icons/battery-full.svg"
+                alt=""
+              >
+              <img
+                v-else-if="device.uploader.battery > 65"
+                class="battery-icon"
+                src="@/assets/icons/battery-three-quarters.svg"
+                alt=""
+              >
+              <img
+                v-else-if="device.uploader.battery > 45"
+                class="battery-icon"
+                src="@/assets/icons/battery-half.svg"
+                alt=""
+              >
+              <img
+                v-else-if="device.uploader.battery > 15"
+                class="battery-icon"
+                src="@/assets/icons/battery-quarter.svg"
+                alt=""
+              >
+              <img
+                v-else
+                class="battery-icon"
+                src="@/assets/icons/battery-low.svg"
+                alt=""
+              >
             </div>
           </div>
         </div>
@@ -53,32 +116,47 @@
     </div>
 
     <div class="flex-1 chart-container">
-      <v-chart class="chart" :option="option"/>
+      <v-chart
+        class="chart"
+        :option="option"
+      />
     </div>
     <div class="d-flex statistics-container">
       <div class="item ">
         <div>Low</div>
-        <div class="value low">{{ distributed.low }}</div>
+        <div class="value low">
+          {{ distributed.low }}
+        </div>
       </div>
       <div class="item ">
         <div>In Range</div>
-        <div class="value normal">{{ distributed.normal }}</div>
+        <div class="value normal">
+          {{ distributed.normal }}
+        </div>
       </div>
       <div class="item ">
         <div>High</div>
-        <div class="value high">{{ distributed.high }}</div>
+        <div class="value high">
+          {{ distributed.high }}
+        </div>
       </div>
       <div class="item ">
         <div>Average</div>
-        <div class="value">{{ average | format_unit }}mmol/L</div>
+        <div class="value">
+          {{ average | format_unit(value.unit) }}{{ value.unit|get_unit_label }}
+        </div>
       </div>
       <div class="item ">
         <div>HbA1c</div>
-        <div class="value">{{ HbA1c }}%</div>
+        <div class="value">
+          {{ HbA1c }}%
+        </div>
       </div>
       <div class="item ">
         <div>CV</div>
-        <div class="value">0%</div>
+        <div class="value">
+          0%
+        </div>
       </div>
     </div>
   </div>
@@ -100,6 +178,9 @@ import VChart, { THEME_KEY } from 'vue-echarts'
 import { Component, Vue } from 'vue-property-decorator'
 import { getDeviceStatus } from '@/api/device'
 import { ipcRenderer } from 'electron'
+import { sgvToUnit, getUnitLabel } from '@/utils/blood'
+import store from '@/utils/store'
+import { DEFAULT_VALUE } from '@/config'
 
 use([
   CanvasRenderer,
@@ -118,8 +199,11 @@ use([
     [THEME_KEY]: 'white'
   },
   filters: {
-    format_unit (value) {
-      return (Math.round(value * 0.555) / 10).toFixed(1)
+    format_unit (value, unit) {
+      return sgvToUnit(value, unit)
+    },
+    get_unit_label (unit) {
+      return getUnitLabel(unit)
     }
   }
 })
@@ -131,13 +215,7 @@ export default class Chart extends Vue {
     offset: 0
   }
 
-  value = {
-    urgent_high: 12.8,
-    high: 9,
-    low: 3.9,
-    target: 7.6,
-    urgent_low: 2.8
-  }
+  value = _.cloneDeep(DEFAULT_VALUE)
 
   device = null
 
@@ -155,8 +233,8 @@ export default class Chart extends Vue {
 
   get distributed () {
     if (this.entries.length) {
-      const high_count = this.entries.filter(({ sgv }) => sgv > this.value.high * 18).length
-      const low_count = this.entries.filter(({ sgv }) => sgv < this.value.low * 18).length
+      const high_count = this.entries.filter(({ sgv }) => sgv > this.value.high).length
+      const low_count = this.entries.filter(({ sgv }) => sgv < this.value.low).length
       const normal_count = this.entries.length - high_count - low_count
       return {
         high: (high_count * 100 / this.entries.length).toFixed(2) + '%',
@@ -218,7 +296,7 @@ export default class Chart extends Vue {
             symbolSize: 8,
             data: entries.map(item => ({
               name: moment(item.date).format('YYYY-MM-DD HH:mm'),
-              value: [item.date, (item.sgv * 0.0555).toFixed(1)],
+              value: [item.date, sgvToUnit(item.sgv, this.value.unit)],
               itemStyle: {
                 color: this.getPointColor(item)
               }
@@ -231,7 +309,7 @@ export default class Chart extends Vue {
                 width: 1
               },
               tooltip: {
-                formatter: '{b}: {c}'
+                formatter: `{b}: {c}${getUnitLabel(this.value.unit)}`
               },
               data: [
                 {
@@ -280,9 +358,9 @@ export default class Chart extends Vue {
       low,
       urgent_low
     } = this.value
-    if (sgv > high * 18 || (sgv < low * 18 && sgv >= urgent_low * 18)) {
+    if (sgv > high || (sgv < low && sgv >= urgent_low)) {
       return '#E6A23C'
-    } else if (sgv < urgent_low * 18) {
+    } else if (sgv < urgent_low) {
       return '#F56C6C'
     } else {
       return '#67C23A'
@@ -290,9 +368,16 @@ export default class Chart extends Vue {
   }
 
   mounted () {
-    ipcRenderer.send('entries-refresh')
     this.initEvent()
     this.loopDeviceStatus()
+    ipcRenderer.send('entries-refresh')
+  }
+
+  getLocalSetting () {
+    const value = store.get('value')
+    if (value) {
+      this.value = value
+    }
   }
 
   async getDeviceStatus () {
@@ -311,6 +396,7 @@ export default class Chart extends Vue {
 
   initEvent () {
     ipcRenderer.on('entries-update', (channel, entries) => {
+      this.getLocalSetting()
       this.current = {
         ...entries[0],
         offset: entries[0].sgv - entries[1].sgv

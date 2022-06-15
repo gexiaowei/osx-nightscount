@@ -5,15 +5,16 @@ import { menubar } from 'menubar'
 import moment from 'moment'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import path from 'path'
-import Store from 'electron-store'
 import { getEntries } from '@/api/entries'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
+import store from '@/utils/store'
+import { getUnitLabel, sgvToUnit } from '@/utils/blood'
+import _ from 'lodash'
+import { DEFAULT_VALUE } from '@/config'
 
-const store = new Store()
+let value = store.get('value', _.cloneDeep(DEFAULT_VALUE))
 
-console.log(store.get('unit'))
-
-let mb, win
+let mb, win, interval_id
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -50,7 +51,8 @@ async function createWindow () {
   win = new BrowserWindow({
     width: 350,
     height: 400,
-    // resizable: false,
+    resizable: false,
+    minimizable: false,
     webPreferences: {
 
       // Use pluginOptions.nodeIntegration, leave this alone
@@ -120,7 +122,7 @@ function setTrayInformation () {
       sgv,
       date
     } = latestEntries[0]
-    mb.tray.setTitle(` ${(sgv * 0.0555).toFixed(1)} mmol/L`)
+    mb.tray.setTitle(` ${sgvToUnit(sgv, value.unit)} ${getUnitLabel(value.unit)}`)
     mb.tray.setToolTip('更新于:' + moment(date).format('YYYY-MM-DD HH:mm'))
   }
 }
@@ -155,8 +157,8 @@ async function getCurrentUpdateEntries () {
 }
 
 function updateEntries (data) {
+  setTrayInformation()
   if (data) {
-    setTrayInformation()
     mb.window && mb.window.webContents.send('entries-update', data)
   } else {
     const currentDate = moment().format('YYYY-MM-DD')
@@ -164,13 +166,27 @@ function updateEntries (data) {
   }
 }
 
+ipcMain.handle('setSetting', (event, setting) => {
+  store.set(setting.key, setting.value)
+  if (setting.key === 'value') {
+    value = setting.value
+    updateEntries()
+  }
+  if (setting.key === 'server') {
+    interval_id && clearInterval(interval_id)
+    loop().then(() => {
+      console.log('重设服务器，获取数据成功')
+    })
+  }
+})
+
 async function loop () {
   try {
     await getDateEntries()
   } catch (e) {
     console.log('初始化数据失败', e)
   } finally {
-    setInterval(async () => {
+    interval_id = setInterval(async () => {
       try {
         await getCurrentUpdateEntries()
       } catch (e) {
