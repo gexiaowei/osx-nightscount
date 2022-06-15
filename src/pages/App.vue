@@ -48,12 +48,11 @@
         <div class="d-flex align-items-center justify-content-center">
           <div class="d-flex align-items-center pill">
             <div class="value d-flex align-items-center">
-              <span
-                v-if="current.offset>=0"
-              >+</span>{{ current.offset | format_unit(value.unit) }}
+              <span v-if="current.offset>=0">+</span>
+              {{ current.offset | format_unit(value.unit) }}
             </div>
             <div class="unit">
-              {{ value.unit|get_unit_label }}
+              {{ value.unit | get_unit_label }}
             </div>
           </div>
         </div>
@@ -155,7 +154,7 @@
       <div class="item">
         <div>CV</div>
         <div class="value">
-          0%
+          {{ CV }}%
         </div>
       </div>
     </div>
@@ -180,6 +179,7 @@ import { getDeviceStatus } from '@/api/device'
 import { ipcRenderer } from 'electron'
 import { sgvToUnit, getUnitLabel } from '@/utils/blood'
 import store from '@/utils/store'
+import { standardDeviation } from '@/utils/math'
 import { DEFAULT_VALUE } from '@/config'
 
 use([
@@ -229,6 +229,14 @@ export default class Chart extends Vue {
 
   get HbA1c () {
     return this.entries.length ? (Math.round(10 * (_.chain(this.entries).map('sgv').mean().value() + 46.7) / 28.7) / 10).toFixed(1) : 0
+  }
+
+  get CV () {
+    if (this.entries.length) {
+      return (standardDeviation(this.entries.map(entry => entry.sgv), false) * 100 / this.average).toFixed(0)
+    } else {
+      return 0
+    }
   }
 
   get distributed () {

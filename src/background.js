@@ -15,7 +15,10 @@ import { DEFAULT_VALUE } from '@/config'
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 let value = store.get('value', _.cloneDeep(DEFAULT_VALUE))
-
+let config = store.get('config')
+if (config) {
+  nativeTheme.themeSource = config.theme
+}
 let mb, win, interval_id
 const entries = {}
 
@@ -66,7 +69,7 @@ async function createPreferenceWindow () {
 
     if (process.env.WEBPACK_DEV_SERVER_URL) {
       await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL + 'preference.html')
-      // if (!process.env.IS_TEST) win.webContents.openDevTools()
+      if (!process.env.IS_TEST) win.webContents.openDevTools()
     } else {
       createProtocol('app')
       win.loadURL('app://./preference.html')
@@ -196,25 +199,15 @@ function initEvent () {
       })
     }
     if (setting.key === 'config') {
-      const { auto } = setting.value
+      const {
+        auto,
+        theme
+      } = setting.value
       app.setLoginItemSettings({
         openAtLogin: auto
       })
+      nativeTheme.themeSource = theme
     }
-  })
-
-  ipcMain.handle('dark-mode:toggle', () => {
-    if (nativeTheme.shouldUseDarkColors) {
-      nativeTheme.themeSource = 'light'
-    } else {
-      nativeTheme.themeSource = 'dark'
-    }
-    console.log(nativeTheme.shouldUseDarkColors)
-    return nativeTheme.shouldUseDarkColors
-  })
-
-  ipcMain.handle('dark-mode:system', () => {
-    nativeTheme.themeSource = 'system'
   })
 }
 

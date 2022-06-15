@@ -1,4 +1,6 @@
 @media (prefers-color-scheme: dark) {
-  $--font-path: '~element-theme-dark/lib/fonts';
   @import "~element-theme-dark";
+  .el-radio + .el-radio {
+    margin-left: 0;
+  }
 }

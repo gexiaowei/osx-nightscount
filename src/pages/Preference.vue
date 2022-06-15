@@ -29,7 +29,7 @@
                 <el-radio label="dark">
                   深色
                 </el-radio>
-                <el-radio label="white">
+                <el-radio label="light">
                   浅色
                 </el-radio>
                 <el-radio label="system">
