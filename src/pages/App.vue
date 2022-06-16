@@ -293,6 +293,16 @@ export default class Chart extends Vue {
     if (entries && entries.length) {
       return {
         tooltip: {
+          formatter: (value) => {
+            switch (value.seriesIndex) {
+              case 0:
+                return `${value.name}<br>${value.value[1]}${getUnitLabel(this.value.unit)}`
+              case 1:
+                return `Type: ${value.data.treatment.eventType} <br />Insulin: ${value.data.treatment.insulin}U  <br />Carbs: ${value.data.treatment.carbs || 0}g <br />Time: ${moment(value.data.treatment.created_at).format('HH:mm')} <br />By: ${value.data.treatment.enteredBy}`
+              default:
+                return ''
+            }
+          },
           axisPointer: {
             type: 'cross',
             label: {
@@ -326,20 +336,38 @@ export default class Chart extends Vue {
             }
           }
         },
-        yAxis: {
-          scale: true
-        },
+        yAxis: [
+          {
+            scale: true,
+            gridIndex: 0
+          },
+          {
+            max: 20,
+            min: 0,
+            gridIndex: 0,
+            axisTick: {
+              show: false
+            },
+            axisLabel: {
+              show: false
+            },
+            splitLine: {
+              show: false
+            }
+          }
+        ],
         series: [
           {
             symbolSize: 8,
             data: entries.map(item => ({
-              name: moment(item.date).format('YYYY-MM-DD HH:mm'),
+              name: moment(item.date).format('HH:mm'),
               value: [item.date, sgvToUnit(item.sgv, this.value.unit)],
               itemStyle: {
                 color: this.getPointColor(item)
               }
             })),
             type: 'scatter',
+            yAxisIndex: 0,
             markLine: {
               symbol: 'none',
               lineStyle: {
@@ -382,6 +410,22 @@ export default class Chart extends Vue {
                 }
               ]
             }
+          },
+          {
+            symbol: 'path://M437.2 403.5L319.1 215L319.1 64h7.1c13.25 0 23.1-10.75 23.1-24l-.0002-16c0-13.25-10.75-24-23.1-24H120C106.8 0 96.01 10.75 96.01 24l-.0002 16c0 13.25 10.75 24 23.1 24h7.1L128 215l-117.2 188.5C-18.48 450.6 15.27 512 70.89 512h306.2C432.7 512 466.5 450.5 437.2 403.5zM137.1 320l48.15-77.63C189.8 237.3 191.9 230.8 191.9 224l.0651-160h63.99l-.06 160c0 6.875 2.25 13.25 5.875 18.38L309.9 320H137.1z',
+            symbolSize: (value) => {
+              return Math.max(value[1] / 20 * 48, 20)
+            },
+            yAxisIndex: 1,
+            data: (this.treatments || []).map(item => ({
+              value: [item.date, item.insulin],
+              treatment: item,
+              itemStyle: {
+                color: '#409EFF'
+                // color: '#E03C8A'
+              }
+            })),
+            type: 'scatter'
           }
         ]
       }

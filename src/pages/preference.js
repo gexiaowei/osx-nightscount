@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import App from './Preference.vue'
 import {
+  Icon,
   Tabs,
   TabPane,
   Form,
@@ -23,6 +24,7 @@ Vue.prototype.$ELEMENT = {
   size: 'small',
   zIndex: 3000
 }
+Vue.use(Icon)
 Vue.use(Tabs)
 Vue.use(TabPane)
 Vue.use(Form)
