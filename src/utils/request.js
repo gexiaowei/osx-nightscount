@@ -7,6 +7,7 @@ request.interceptors.request.use(function (config) {
   let baseUrl = store.get('server.url')
   const proxy = store.get('proxy')
   if (!baseUrl) {
+    // baseUrl = 'https://nightscout-gexiaowei.herokuapp.com'
     throw new Error('未设置Nightscount服务器地址')
   } else {
     if (!baseUrl.startsWith('https://')) {

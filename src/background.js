@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, protocol, Menu, BrowserWindow, ipcMain, nativeTheme } from 'electron'
+import { app, protocol, Menu, BrowserWindow, ipcMain, nativeTheme, shell } from 'electron'
 import { menubar } from 'menubar'
 import moment from 'moment'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
@@ -18,6 +18,8 @@ let value = store.get('value', _.cloneDeep(DEFAULT_VALUE))
 const config = store.get('config')
 let mb, win, interval_id
 const entries = {}
+
+createMenu()
 
 app.setLoginItemSettings({
   openAsHidden: true
@@ -44,12 +46,12 @@ app.on('ready', async () => {
   // }
 
   initEvent()
-  await createMenu()
+  await createTray()
   // await createPreferenceWindow()
   if (config) {
     nativeTheme.themeSource = config.theme
   }
-  loop().then(() => {
+  startLoop().then(() => {
     console.log('成功获取远程数据')
   })
 })
@@ -82,7 +84,7 @@ async function createPreferenceWindow () {
   return win
 }
 
-function createMenu () {
+function createTray () {
   return new Promise(resolve => {
     let uri
     if (process.env.WEBPACK_DEV_SERVER_URL) {
@@ -110,7 +112,7 @@ function createMenu () {
       mb.tray.on('right-click', () => {
         const contextMenu = Menu.buildFromTemplate([
           {
-            label: '设置',
+            label: '偏好设置',
             accelerator: 'CommandOrControl+;',
             click: async () => {
               await createPreferenceWindow()
@@ -129,6 +131,57 @@ function createMenu () {
       resolve(mb)
     })
   })
+}
+
+function createMenu () {
+  const template = [
+    {
+      label: app.name,
+      submenu: [
+        { role: 'about' },
+        {
+          label: 'Preference',
+          accelerator: 'CommandOrControl+;',
+          click: async () => {
+            await createPreferenceWindow()
+          }
+        },
+        { role: 'quit' }
+      ]
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' }
+      ]
+    },
+    {
+      label: 'View',
+      submenu: [
+        { role: 'reload' },
+        { role: 'forceReload' }
+      ]
+    },
+    {
+      role: 'help',
+      submenu: [
+        {
+          label: 'Learn More',
+          click: async () => {
+            await shell.openExternal('https://electronjs.org')
+          }
+        }
+      ]
+    }
+  ]
+
+  const menu = Menu.buildFromTemplate(template)
+  Menu.setApplicationMenu(menu)
 }
 
 function setTrayInformation () {
@@ -153,7 +206,7 @@ async function getDateEntries (date) {
     count: 999
   })
   entries[moment(date).format('YYYY-MM-DD')] = data
-  updateEntries(data)
+  return data
 }
 
 async function getCurrentUpdateEntries () {
@@ -164,39 +217,48 @@ async function getCurrentUpdateEntries () {
     })
     if (data.length) {
       entries[currentDate] = [...data, ...entries[currentDate]]
-      updateEntries(entries[currentDate])
     }
   } else {
     await getDateEntries()
   }
+  updateEntries()
 }
 
-function updateEntries (data) {
+function updateEntries () {
   setTrayInformation()
-  if (data) {
-    mb.window && mb.window.webContents.send('entries-update', data)
-  } else {
-    const currentDate = moment().format('YYYY-MM-DD')
-    mb.window && mb.window.webContents.send('entries-update', entries[currentDate])
-  }
+  const currentDate = moment().format('YYYY-MM-DD')
+  mb.window && mb.window.webContents.send('entries-update', entries[currentDate])
 }
 
 function initEvent () {
-  ipcMain.on('entries-refresh', () => {
-    updateEntries()
+  ipcMain.handle('entries-refresh', () => {
+    return entries[moment().format('YYYY-MM-DD')]
   })
 
-  ipcMain.handle('setSetting', (event, setting) => {
+  ipcMain.handle('entries-request', async (event, date) => {
+    if (moment(date).isSame(moment(), 'day')) {
+      startLoop()
+    } else {
+      stopLoop()
+    }
+
+    const data = entries[moment(date).format('YYYY-MM-DD')]
+    if (!data || !data.length) {
+      return await getDateEntries(date)
+    } else {
+      return data
+    }
+  })
+
+  ipcMain.handle('set-setting', (event, setting) => {
     if (setting) {
       try {
         store.set(setting.key, setting.value)
         if (setting.key === 'value') {
           value = setting.value
-          updateEntries()
         }
         if (setting.key === 'server') {
-          interval_id && clearInterval(interval_id)
-          loop().then(() => {
+          restartLoop().then(() => {
             console.log('重设服务器，获取数据成功')
           })
         }
@@ -213,23 +275,39 @@ function initEvent () {
       } catch (e) {
         store.delete(setting.key)
         console.log('设置失败', setting)
+      } finally {
+        mb && mb.window.webContents.send('setting-updated')
       }
     }
   })
 }
 
-async function loop () {
+async function startLoop () {
+  if (interval_id) {
+    return
+  }
   try {
-    await getDateEntries()
-  } catch (e) {
-    console.log('初始化数据失败', e)
-  } finally {
     interval_id = setInterval(async () => {
       try {
         await getCurrentUpdateEntries()
       } catch (e) {
-        console.log('获取数据失败', e)
+        console.log('获取数据失败')
       }
     }, 30 * 1000)
+    await getCurrentUpdateEntries()
+  } catch (e) {
+    console.log('初始化数据失败')
   }
+}
+
+async function restartLoop () {
+  stopLoop()
+  startLoop().then(() => {
+    console.log('重设服务器，获取数据成功')
+  })
+}
+
+function stopLoop () {
+  interval_id && clearInterval(interval_id)
+  interval_id = null
 }

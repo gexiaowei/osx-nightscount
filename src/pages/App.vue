@@ -62,6 +62,26 @@
           {{ +current.date | moment('HH:mm') }}
         </div>
         <div class="d-flex align-items-center justify-content-center">
+          <div>
+            <el-popover
+              placement="left"
+              width="280"
+              trigger="click"
+            >
+              <v-date-picker
+                v-model="currentDate"
+                is-expanded
+                :max-date="new Date()"
+                @input="changeDate"
+              />
+              <img
+                slot="reference"
+                class="history-button"
+                src="@/assets/icons/clock-rotate-left.svg"
+                alt=""
+              >
+            </el-popover>
+          </div>
           <div class="d-flex align-items-center pill">
             <div class="value">
               {{ minuteOffset }}
@@ -114,7 +134,10 @@
       </div>
     </div>
 
-    <div class="flex-1 chart-container">
+    <div
+      v-loading="loading"
+      class="flex-1 chart-container"
+    >
       <v-chart
         class="chart"
         :option="option"
@@ -168,18 +191,18 @@ import { ScatterChart } from 'echarts/charts'
 import moment from 'moment'
 import _ from 'lodash'
 import {
-  TitleComponent,
-  TooltipComponent,
   LegendComponent,
   MarkLineComponent,
-  MarkPointComponent
+  MarkPointComponent,
+  TitleComponent,
+  TooltipComponent
 } from 'echarts/components'
 import VChart, { THEME_KEY } from 'vue-echarts'
 import { Component, Vue } from 'vue-property-decorator'
 import { getDeviceStatus } from '@/api/device'
 import { getTreatments } from '@/api/treatment'
 import { ipcRenderer } from 'electron'
-import { sgvToUnit, getUnitLabel } from '@/utils/blood'
+import { getUnitLabel, sgvToUnit } from '@/utils/blood'
 import store from '@/utils/store'
 import { standardDeviation } from '@/utils/math'
 import { DEFAULT_VALUE } from '@/config'
@@ -211,9 +234,11 @@ use([
   }
 })
 export default class Chart extends Vue {
+  loading = false
   entries = []
   treatments = []
   currentTime = moment()
+  currentDate = moment().toDate()
   current = {
     sgv: 0,
     date: moment().format('x'),
@@ -265,7 +290,7 @@ export default class Chart extends Vue {
 
   get option () {
     const { entries } = this
-    if (entries.length) {
+    if (entries && entries.length) {
       return {
         tooltip: {
           axisPointer: {
@@ -292,8 +317,8 @@ export default class Chart extends Vue {
           containLabel: true
         },
         xAxis: {
-          min: moment().startOf('day').format('x'),
-          max: moment().endOf('day').format('x'),
+          min: moment(this.currentDate).startOf('day').format('x'),
+          max: moment(this.currentDate).endOf('day').format('x'),
           interval: 2 * 60 * 60 * 1000,
           axisLabel: {
             formatter: (value) => {
@@ -382,9 +407,10 @@ export default class Chart extends Vue {
 
   mounted () {
     this.initEvent()
+    this.getLocalSetting()
+    this.getInitData()
     this.createTimer()
     this.loopDeviceStatus()
-    ipcRenderer.send('entries-refresh')
   }
 
   beforeDestroy () {
@@ -394,6 +420,24 @@ export default class Chart extends Vue {
 
   createTimer () {
     setInterval(() => { this.currentTime = moment() }, 30 * 1000)
+  }
+
+  async getInitData () {
+    try {
+      this.loading = true
+      this.entries = await ipcRenderer.invoke('entries-refresh')
+    } finally {
+      this.loading = false
+    }
+  }
+
+  async changeDate (date) {
+    try {
+      this.loading = true
+      this.entries = await ipcRenderer.invoke('entries-request', date)
+    } finally {
+      this.loading = false
+    }
   }
 
   getLocalSetting () {
@@ -437,12 +481,17 @@ export default class Chart extends Vue {
 
   initEvent () {
     ipcRenderer.on('entries-update', (channel, entries) => {
-      this.getLocalSetting()
-      this.current = {
-        ...entries[0],
-        offset: entries[0].sgv - entries[1].sgv
+      if (entries.length) {
+        this.current = {
+          ...entries[0],
+          offset: entries[0].sgv - entries[1].sgv
+        }
+        this.entries = entries
       }
-      this.entries = entries
+      this.loading = false
+    })
+    ipcRenderer.on('setting-updated', () => {
+      this.getLocalSetting()
     })
   }
 }
@@ -473,6 +522,22 @@ export default class Chart extends Vue {
     .time {
       font-size: 5rem;
       color: var(--text-regular-color)
+    }
+
+    .history-button {
+      cursor: pointer;
+      height: 1.1rem;
+      display: flex;
+      margin-right: 0.5rem;
+
+      @media (prefers-color-scheme: light) {
+        filter: invert(18%) sepia(6%) saturate(309%) hue-rotate(182deg) brightness(92%) contrast(92%);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        filter: invert(100%) sepia(0%) saturate(2%) hue-rotate(236deg) brightness(104%) contrast(101%);
+      }
+
     }
 
     .pill {

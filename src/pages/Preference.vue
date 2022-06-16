@@ -213,7 +213,7 @@
         </div>
         <div class="setting-container d-flex flex-column align-items-center justify-content-center">
           <img
-            src="@/assets/icons/droplet-degree.svg"
+            src="@/assets/logo.png"
             class="logo"
             alt=""
           >
@@ -276,7 +276,7 @@ class Preference extends Vue {
 
   @Watch('proxy', { deep: true })
   handleProxyChange (value) {
-    ipcRenderer.invoke('setSetting', {
+    ipcRenderer.invoke('set-setting', {
       key: 'proxy',
       value
     })
@@ -284,7 +284,7 @@ class Preference extends Vue {
 
   @Watch('config', { deep: true })
   handleConfigChange (value) {
-    ipcRenderer.invoke('setSetting', {
+    ipcRenderer.invoke('set-setting', {
       key: 'config',
       value
     })
@@ -300,7 +300,7 @@ class Preference extends Vue {
       urgent_low,
       target
     } = this.value
-    ipcRenderer.invoke('setSetting', {
+    ipcRenderer.invoke('set-setting', {
       key: 'value',
       value: {
         unit,
@@ -315,7 +315,7 @@ class Preference extends Vue {
 
   @Watch('server', { deep: true })
   handleServerSettingChange (server) {
-    ipcRenderer.invoke('setSetting', {
+    ipcRenderer.invoke('set-setting', {
       key: 'server',
       value: server
     })
