@@ -75,7 +75,7 @@ async function createPreferenceWindow () {
       win.loadURL('app://./preference.html')
     }
 
-    win.on('closed', function (evt) {
+    win.on('closed', () => {
       win = null
     })
   }
@@ -230,6 +230,6 @@ async function loop () {
       } catch (e) {
         console.log('获取数据失败', e)
       }
-    }, 60 * 1000)
+    }, 30 * 1000)
   }
 }

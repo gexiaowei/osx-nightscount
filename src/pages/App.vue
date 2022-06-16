@@ -171,11 +171,13 @@ import {
   TitleComponent,
   TooltipComponent,
   LegendComponent,
-  MarkLineComponent
+  MarkLineComponent,
+  MarkPointComponent
 } from 'echarts/components'
 import VChart, { THEME_KEY } from 'vue-echarts'
 import { Component, Vue } from 'vue-property-decorator'
 import { getDeviceStatus } from '@/api/device'
+import { getTreatments } from '@/api/treatment'
 import { ipcRenderer } from 'electron'
 import { sgvToUnit, getUnitLabel } from '@/utils/blood'
 import store from '@/utils/store'
@@ -188,7 +190,8 @@ use([
   TitleComponent,
   TooltipComponent,
   LegendComponent,
-  MarkLineComponent
+  MarkLineComponent,
+  MarkPointComponent
 ])
 
 @Component({
@@ -209,6 +212,8 @@ use([
 })
 export default class Chart extends Vue {
   entries = []
+  treatments = []
+  currentTime = moment()
   current = {
     sgv: 0,
     date: moment().format('x'),
@@ -220,7 +225,7 @@ export default class Chart extends Vue {
   device = null
 
   get minuteOffset () {
-    return moment().diff(moment(+this.current.date), 'minutes')
+    return this.currentTime.diff(moment(+this.current.date), 'minutes')
   }
 
   get average () {
@@ -377,8 +382,18 @@ export default class Chart extends Vue {
 
   mounted () {
     this.initEvent()
+    this.createTimer()
     this.loopDeviceStatus()
     ipcRenderer.send('entries-refresh')
+  }
+
+  beforeDestroy () {
+    clearInterval(this.timer)
+    this.timer = null
+  }
+
+  createTimer () {
+    setInterval(() => { this.currentTime = moment() }, 30 * 1000)
   }
 
   getLocalSetting () {
@@ -395,10 +410,28 @@ export default class Chart extends Vue {
     }
   }
 
+  async getTreatments () {
+    const end = moment().endOf('day').format()
+    const { data } = await getTreatments({
+      'find[created_at][$lte]': end
+    })
+    if (data.length) {
+      this.treatments = data.filter(({ created_at }) => moment(created_at).isSameOrAfter(moment().startOf('day'))).map(item => ({
+        ...item,
+        date: moment(item.created_at).format('x')
+      }))
+    }
+  }
+
+  getExtraInformation () {
+    this.getDeviceStatus()
+    this.getTreatments()
+  }
+
   async loopDeviceStatus () {
-    await this.getDeviceStatus()
+    await this.getExtraInformation()
     setInterval(() => {
-      this.getDeviceStatus()
+      this.getExtraInformation()
     }, 5 * 60 * 1000)
   }
 

@@ -354,7 +354,6 @@ class Preference extends Vue {
       this.config = config
     }
     const proxy = store.get('proxy')
-    console.log(proxy)
     if (proxy) {
       this.proxy = proxy
     }
