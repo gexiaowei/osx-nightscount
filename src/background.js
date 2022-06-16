@@ -6,11 +6,11 @@ import moment from 'moment'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import path from 'path'
 import { getEntries } from '@/api/entries'
-import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 import store from '@/utils/store'
 import { getUnitLabel, sgvToUnit } from '@/utils/blood'
 import _ from 'lodash'
 import { DEFAULT_VALUE } from '@/config'
+// import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 let value = store.get('value', _.cloneDeep(DEFAULT_VALUE))
@@ -36,14 +36,14 @@ protocol.registerSchemesAsPrivileged([
 ])
 
 app.on('ready', async () => {
-  if (isDevelopment && !process.env.IS_TEST) {
-    // Install Vue Devtools
-    try {
-      await installExtension(VUEJS_DEVTOOLS)
-    } catch (e) {
-      console.error('Vue Devtools failed to install:', e.toString())
-    }
-  }
+  // if (isDevelopment && !process.env.IS_TEST) {
+  //   // Install Vue Devtools
+  //   try {
+  //     await installExtension(VUEJS_DEVTOOLS)
+  //   } catch (e) {
+  //     console.error('Vue Devtools failed to install:', e.toString())
+  //   }
+  // }
 
   initEvent()
   await createTray()
@@ -128,7 +128,7 @@ function createTray () {
         ])
         mb.tray.popUpContextMenu(contextMenu)
       })
-      mb.window.webContents.openDevTools()
+      // mb.window.webContents.openDevTools()
       resolve(mb)
     })
   })
