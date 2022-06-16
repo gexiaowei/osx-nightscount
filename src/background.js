@@ -173,7 +173,7 @@ function createMenu () {
         {
           label: 'Learn More',
           click: async () => {
-            await shell.openExternal('https://electronjs.org')
+            await shell.openExternal('https://github.com/gexiaowei/osx-nightscount')
           }
         }
       ]
