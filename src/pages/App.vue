@@ -235,6 +235,7 @@ use([
 })
 export default class Chart extends Vue {
   loading = false
+  auto = true
   entries = []
   treatments = []
   currentTime = moment()
@@ -338,7 +339,8 @@ export default class Chart extends Vue {
         },
         yAxis: [
           {
-            scale: true,
+            max: Math.ceil(sgvToUnit(this.value.urgent_high, this.value.unit) * 1.1),
+            min: Math.floor(sgvToUnit(this.value.urgent_low, this.value.unit) * 0.9),
             gridIndex: 0
           },
           {
@@ -478,7 +480,9 @@ export default class Chart extends Vue {
   async changeDate (date) {
     try {
       this.loading = true
+      this.auto = moment(date).isSame(moment(), 'day')
       this.entries = await ipcRenderer.invoke('entries-request', date)
+      await this.getTreatments()
     } finally {
       this.loading = false
     }
@@ -499,7 +503,8 @@ export default class Chart extends Vue {
   }
 
   async getTreatments () {
-    const end = moment().endOf('day').format()
+    const date = this.auto ? moment() : moment(this.currentDate)
+    const end = date.endOf('day').format()
     const { data } = await getTreatments({
       'find[created_at][$lte]': end
     })
@@ -513,7 +518,9 @@ export default class Chart extends Vue {
 
   getExtraInformation () {
     this.getDeviceStatus()
-    this.getTreatments()
+    if (this.auto) {
+      this.getTreatments()
+    }
   }
 
   async loopDeviceStatus () {
