@@ -55,6 +55,7 @@ app.on('ready', async () => {
   registerShortcut(store.get('shortcut'))
   await createTray()
   // await createPreferenceWindow()
+  app.dock.hide()
   if (config) {
     nativeTheme.themeSource = config.theme
   }
