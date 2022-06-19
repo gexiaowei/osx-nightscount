@@ -3,7 +3,10 @@
     <div class="d-flex align-items-center justify-content-between summary-container">
       <div class="summary text-center">
         <div class=" d-flex align-items-center">
-          <div class="current">
+          <div
+            class="current"
+            :class="getSGVStyle(current.sgv)"
+          >
             {{ current.sgv | format_unit(value.unit) }}
           </div>
           <div>
@@ -468,6 +471,22 @@ export default class Chart extends Vue {
     setInterval(() => { this.currentTime = moment() }, 30 * 1000)
   }
 
+  getSGVStyle (sgv) {
+    const {
+      urgent_high,
+      high,
+      low,
+      urgent_low
+    } = this.value
+    if (sgv >= urgent_high || sgv <= urgent_low) {
+      return 'danger'
+    } else if (sgv > high || sgv < low) {
+      return 'warning'
+    } else {
+      return 'normal'
+    }
+  }
+
   async getInitData () {
     try {
       this.loading = true
@@ -561,6 +580,14 @@ export default class Chart extends Vue {
       .current {
         font-size: 5rem;
         color: var(--success-color);
+
+        &.warning {
+          color: var(--warning-color) !important;
+        }
+
+        &.danger {
+          color: var(--error-color) !important;
+        }
       }
 
       .arrow {

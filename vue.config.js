@@ -43,7 +43,14 @@ module.exports = defineConfig({
         appId: 'com.cos66.cgm_monitor',
         productName: 'CGM Monitor',
         mac: {
-          icon: 'build/icons/icon.icns'
+          icon: 'build/icons/icon.icns',
+          target: {
+            target: 'default',
+            arch: [
+              'x64',
+              'arm64'
+            ]
+          }
         }
       }
     }
