@@ -7,7 +7,7 @@ import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import path from 'path'
 import { getEntries } from '@/api/entries'
 import store from '@/utils/store'
-import { getUnitLabel, sgvToUnit } from '@/utils/blood'
+import { getUnitLabel, sgvToUnitString } from '@/utils/blood'
 import _ from 'lodash'
 import { DEFAULT_VALUE } from '@/config'
 // import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
@@ -232,7 +232,7 @@ function setTrayInformation () {
       sgv,
       date
     } = latestEntries[0]
-    mb.tray.setTitle(` ${sgvToUnit(sgv, value.unit)} ${getUnitLabel(value.unit)}`)
+    mb.tray.setTitle(` ${sgvToUnitString(sgv, value.unit)} ${getUnitLabel(value.unit)}`)
     mb.tray.setToolTip('更新于:' + moment(date).format('YYYY-MM-DD HH:mm'))
   }
 }
@@ -314,7 +314,6 @@ function initEvent () {
         }
 
         if (setting.key === 'shortcut') {
-          console.log(setting.value)
           registerShortcut(setting.value)
         }
       } catch (e) {

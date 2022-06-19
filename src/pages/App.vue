@@ -202,7 +202,7 @@ import { Component, Vue } from 'vue-property-decorator'
 import { getDeviceStatus } from '@/api/device'
 import { getTreatments } from '@/api/treatment'
 import { ipcRenderer } from 'electron'
-import { getUnitLabel, sgvToUnit } from '@/utils/blood'
+import { getUnitLabel, sgvToUnit, sgvToUnitString } from '@/utils/blood'
 import store from '@/utils/store'
 import { standardDeviation } from '@/utils/math'
 import { DEFAULT_VALUE } from '@/config'
@@ -226,7 +226,7 @@ use([
   },
   filters: {
     format_unit (value, unit) {
-      return sgvToUnit(value, unit)
+      return sgvToUnitString(value, unit)
     },
     get_unit_label (unit) {
       return getUnitLabel(unit)
