@@ -206,6 +206,33 @@
           class="tab-item"
         >
           <img
+            src="@/assets/icons/keyboard.svg"
+            alt=""
+          >
+          快捷键
+        </div>
+        <div class="setting-container">
+          <el-form
+            ref="shortcut"
+            :model="shortcut"
+            label-width="100px"
+            label-position="left"
+          >
+            <el-form-item label="切换显示">
+              <hot-key-input
+                :hotkey.sync="shortcut.toggle"
+                placeholder="请按需要绑定的按键，支持组合按键"
+              />
+            </el-form-item>
+          </el-form>
+        </div>
+      </el-tab-pane>
+      <el-tab-pane>
+        <div
+          slot="label"
+          class="tab-item"
+        >
+          <img
             src="@/assets/icons/circle-info.svg"
             alt=""
           >
@@ -231,17 +258,24 @@
 import { Component, Watch, Vue } from 'vue-property-decorator'
 import { ipcRenderer } from 'electron'
 import _ from 'lodash'
+import HotKeyInput from '@/components/HotKeyInput'
 import { convertUnits, sgvToUnit, toSgv } from '@/utils/blood'
 import { DEFAULT_VALUE } from '@/config'
 import store from '@/utils/store'
 
-export default @Component({})
+export default @Component({
+  components: { HotKeyInput }
+})
 class Preference extends Vue {
   tab = 'common'
   value = _.cloneDeep(DEFAULT_VALUE)
 
   server = {
     url: ''
+  }
+
+  shortcut = {
+    toggle: []
   }
 
   proxy = {
@@ -272,6 +306,16 @@ class Preference extends Vue {
     this.value.urgent_low = convertUnits(this.value.urgent_low, unit)
     this.value.target = convertUnits(this.value.target, unit)
     this.handleValueSettingChange()
+  }
+
+  @Watch('shortcut', { deep: true })
+  handleShortcutChange (value) {
+    ipcRenderer.invoke('set-setting', {
+      key: 'shortcut',
+      value: {
+        toggle: value.toggle.length ? value.toggle[0].text : ''
+      }
+    })
   }
 
   @Watch('proxy', { deep: true })
@@ -356,6 +400,12 @@ class Preference extends Vue {
     const proxy = store.get('proxy')
     if (proxy) {
       this.proxy = proxy
+    }
+    const shortcut = store.get('shortcut')
+    if (shortcut) {
+      this.shortcut = {
+        toggle: shortcut.toggle ? [shortcut.toggle] : []
+      }
     }
   }
 }

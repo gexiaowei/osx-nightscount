@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, protocol, Menu, BrowserWindow, ipcMain, nativeTheme, shell } from 'electron'
+import { app, protocol, Menu, BrowserWindow, ipcMain, nativeTheme, shell, globalShortcut } from 'electron'
 import { menubar } from 'menubar'
 import moment from 'moment'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
@@ -12,6 +12,12 @@ import _ from 'lodash'
 import { DEFAULT_VALUE } from '@/config'
 // import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 
+const KEY_MAP = {
+  '⌘': 'CommandOrControl',
+  '⇧': 'Shift',
+  '⌃': 'Control',
+  '⌥': 'Alt'
+}
 const isDevelopment = process.env.NODE_ENV !== 'production'
 let value = store.get('value', _.cloneDeep(DEFAULT_VALUE))
 
@@ -46,6 +52,7 @@ app.on('ready', async () => {
   // }
 
   initEvent()
+  registerShortcut(store.get('shortcut'))
   await createTray()
   // await createPreferenceWindow()
   if (config) {
@@ -56,12 +63,16 @@ app.on('ready', async () => {
   })
 })
 
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll()
+})
+
 async function createPreferenceWindow () {
   if (!win) {
     win = new BrowserWindow({
-      width: 430,
+      width: 490,
       height: 400,
-      resizable: false,
+      resizable: true,
       minimizable: false,
       webPreferences: {
         nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
@@ -82,6 +93,25 @@ async function createPreferenceWindow () {
     })
   }
   return win
+}
+
+function registerShortcut (shortcut) {
+  globalShortcut.unregisterAll()
+  if (shortcut) {
+    if (shortcut.toggle) {
+      const keys = shortcut.toggle.split('+')
+
+      globalShortcut.register(keys.map(item => KEY_MAP[item] || item).join('+'), () => {
+        if (mb) {
+          if (mb.window.isVisible()) {
+            mb.window.hide()
+          } else {
+            mb.window.show()
+          }
+        }
+      })
+    }
+  }
 }
 
 function createTray () {
@@ -280,6 +310,11 @@ function initEvent () {
             openAtLogin: auto
           })
           nativeTheme.themeSource = theme
+        }
+
+        if (setting.key === 'shortcut') {
+          console.log(setting.value)
+          registerShortcut(setting.value)
         }
       } catch (e) {
         store.delete(setting.key)
