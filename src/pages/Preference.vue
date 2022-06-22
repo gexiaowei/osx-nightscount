@@ -161,8 +161,87 @@
               />
             </el-form-item>
             <el-form-item
-              label="代理服务器"
+              label="Libre服务"
               label-position="left"
+            >
+              <el-switch
+                v-model="libre.enable"
+              />
+            </el-form-item>
+            <el-form-item
+              v-show="libre.enable"
+              label="用户名"
+            >
+              <el-input
+                v-model="libre.user"
+                placeholder="请输入用户名"
+              />
+            </el-form-item>
+            <el-form-item
+              v-show="libre.enable"
+              label="密码"
+            >
+              <el-input
+                v-model="libre.password"
+                show-password
+                placeholder="请输入密码"
+              />
+            </el-form-item>
+            <el-form-item
+              v-show="libre.enable"
+              label="设备ID"
+            >
+              <el-input
+                v-model="libre.device_id"
+                placeholder="请输入设备ID"
+              >
+                <template slot="append">
+                  <div
+                    class="w-100 d-flex align-items-center justify-content-center"
+                    @click="resetDeviceID"
+                  >
+                    <img
+                      class="refresh"
+                      src="@/assets/icons/rotate.svg"
+                      alt=""
+                    >
+                  </div>
+                </template>
+              </el-input>
+            </el-form-item>
+            <el-form-item
+              v-show="libre.enable"
+            >
+              <el-button
+                :loading="testing"
+                @click="testLibreServer"
+              >
+                测试连接
+              </el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+      </el-tab-pane>
+      <el-tab-pane>
+        <div
+          slot="label"
+          class="tab-item"
+        >
+          <img
+            src="@/assets/icons/network-wired.svg"
+            alt=""
+          >
+          代理
+        </div>
+        <div class="setting-container">
+          <el-form
+            ref="proxy"
+            :model="proxy"
+            label-width="100px"
+            label-position="left"
+          >
+            <el-form-item
+              label="代理服务器"
             >
               <el-switch
                 v-model="proxy.enable"
@@ -258,6 +337,7 @@
 import { Component, Watch, Vue } from 'vue-property-decorator'
 import { ipcRenderer } from 'electron'
 import _ from 'lodash'
+import { v4 } from 'uuid'
 import HotKeyInput from '@/components/HotKeyInput'
 import { convertUnits, sgvToUnit, toSgv } from '@/utils/blood'
 import { DEFAULT_VALUE } from '@/config'
@@ -268,10 +348,18 @@ export default @Component({
 })
 class Preference extends Vue {
   tab = 'common'
+  testing = false
   value = _.cloneDeep(DEFAULT_VALUE)
 
   server = {
     url: ''
+  }
+
+  libre = {
+    enable: true,
+    user: '',
+    password: '',
+    device_id: ''
   }
 
   shortcut = {
@@ -408,6 +496,22 @@ class Preference extends Vue {
       }
     }
   }
+
+  resetDeviceID () {
+    this.$set(this.libre, 'device_id', v4().toUpperCase())
+  }
+
+  async testLibreServer () {
+    try {
+      this.testing = true
+      await ipcRenderer.invoke('test-libre', this.libre)
+      this.$message.success('连接服务器成功')
+    } catch (e) {
+      this.$message.error('连接服务器失败')
+    } finally {
+      this.testing = false
+    }
+  }
 }
 </script>
 
@@ -438,6 +542,18 @@ class Preference extends Vue {
 
 .logo {
   width: 10rem;
+
+  @media (prefers-color-scheme: dark) {
+    filter: invert(100%) sepia(0%) saturate(2%) hue-rotate(236deg) brightness(104%) contrast(101%);
+  }
+}
+
+.refresh {
+  cursor: pointer;
+  display: flex;
+  width: 14px;
+  height: 14px;
+  filter: invert(48%) sepia(96%) saturate(445%) hue-rotate(176deg) brightness(100%) contrast(103%);
 
   @media (prefers-color-scheme: dark) {
     filter: invert(100%) sepia(0%) saturate(2%) hue-rotate(236deg) brightness(104%) contrast(101%);

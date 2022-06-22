@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import App from './Preference.vue'
 import {
-  Icon,
+  Button,
   Tabs,
   TabPane,
   Form,
@@ -12,7 +12,8 @@ import {
   Option,
   Switch,
   Radio,
-  RadioGroup
+  RadioGroup,
+  Message
 } from 'element-ui'
 
 import 'element-ui/lib/theme-chalk/index.css'
@@ -24,7 +25,7 @@ Vue.prototype.$ELEMENT = {
   size: 'small',
   zIndex: 3000
 }
-Vue.use(Icon)
+Vue.use(Button)
 Vue.use(Tabs)
 Vue.use(TabPane)
 Vue.use(Form)
@@ -36,7 +37,7 @@ Vue.use(Option)
 Vue.use(Switch)
 Vue.use(Radio)
 Vue.use(RadioGroup)
-
+Vue.prototype.$message = Message
 Vue.config.productionTip = false
 
 new Vue({

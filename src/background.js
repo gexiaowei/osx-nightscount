@@ -10,7 +10,8 @@ import store from '@/utils/store'
 import { getUnitLabel, sgvToUnitString } from '@/utils/blood'
 import _ from 'lodash'
 import { DEFAULT_VALUE } from '@/config'
-// import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
+import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
+import { auth } from '@/api/libre'
 
 const KEY_MAP = {
   '⌘': 'CommandOrControl',
@@ -22,6 +23,7 @@ const isDevelopment = process.env.NODE_ENV !== 'production'
 let value = store.get('value', _.cloneDeep(DEFAULT_VALUE))
 
 const config = store.get('config')
+const server = store.get('server')
 let mb, win, interval_id
 const entries = {}
 
@@ -42,14 +44,14 @@ protocol.registerSchemesAsPrivileged([
 ])
 
 app.on('ready', async () => {
-  // if (isDevelopment && !process.env.IS_TEST) {
-  //   // Install Vue Devtools
-  //   try {
-  //     await installExtension(VUEJS_DEVTOOLS)
-  //   } catch (e) {
-  //     console.error('Vue Devtools failed to install:', e.toString())
-  //   }
-  // }
+  if (isDevelopment && !process.env.IS_TEST) {
+    // Install Vue Devtools
+    try {
+      await installExtension(VUEJS_DEVTOOLS)
+    } catch (e) {
+      console.error('Vue Devtools failed to install:', e.toString())
+    }
+  }
 
   initEvent()
   registerShortcut(store.get('shortcut'))
@@ -71,8 +73,8 @@ app.on('will-quit', () => {
 async function createPreferenceWindow () {
   if (!win) {
     win = new BrowserWindow({
-      width: 490,
-      height: 400,
+      width: 580,
+      height: 420,
       resizable: true,
       minimizable: false,
       webPreferences: {
@@ -83,7 +85,7 @@ async function createPreferenceWindow () {
 
     if (process.env.WEBPACK_DEV_SERVER_URL) {
       await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL + 'preference.html')
-      // if (!process.env.IS_TEST) win.webContents.openDevTools()
+      if (!process.env.IS_TEST) win.webContents.openDevTools()
     } else {
       createProtocol('app')
       win.loadURL('app://./preference.html')
@@ -215,7 +217,15 @@ function createMenu () {
           click: async () => {
             await shell.openExternal('https://github.com/gexiaowei/osx-nightscount')
           }
-        }
+        },
+        server && server.url
+          ? {
+              label: 'Nightscount',
+              click: async () => {
+                await shell.openExternal(server.url)
+              }
+            }
+          : null
       ]
     }
   ]
@@ -323,6 +333,14 @@ function initEvent () {
         mb && mb.window.webContents.send('setting-updated')
       }
     }
+  })
+  ipcMain.handle('test-libre', (event, data) => {
+    const {
+      user,
+      password,
+      device_id
+    } = data
+    return auth(user, password, device_id, false)
   })
 }
 
