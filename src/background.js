@@ -11,7 +11,7 @@ import { getUnitLabel, sgvToUnitString } from '@/utils/blood'
 import _ from 'lodash'
 import { DEFAULT_VALUE } from '@/config'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
-import { auth } from '@/api/libre'
+import { auth, transfer } from '@/api/libre'
 
 const KEY_MAP = {
   '⌘': 'CommandOrControl',
@@ -267,6 +267,10 @@ async function getCurrentUpdateEntries () {
     })
     if (data.length) {
       entries[currentDate] = [...data, ...entries[currentDate]]
+      const libre = store.get('libre')
+      if (libre && libre.enable) {
+        uploadToLibre(libre, data).then(() => { console.log('上传到Libre服务器成功') })
+      }
     }
   } else {
     await getDateEntries()
@@ -372,4 +376,14 @@ async function restartLoop () {
 function stopLoop () {
   interval_id && clearInterval(interval_id)
   interval_id = null
+}
+
+async function uploadToLibre (libre, data) {
+  const {
+    user,
+    password,
+    device_id
+  } = libre
+  const token = await auth(user, password, device_id, false)
+  await transfer(device_id, token, data, [], [])
 }

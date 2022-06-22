@@ -194,20 +194,7 @@
               <el-input
                 v-model="libre.device_id"
                 placeholder="请输入设备ID"
-              >
-                <template slot="append">
-                  <div
-                    class="w-100 d-flex align-items-center justify-content-center"
-                    @click="resetDeviceID"
-                  >
-                    <img
-                      class="refresh"
-                      src="@/assets/icons/rotate.svg"
-                      alt=""
-                    >
-                  </div>
-                </template>
-              </el-input>
+              />
             </el-form-item>
             <el-form-item
               v-show="libre.enable"
@@ -337,7 +324,6 @@
 import { Component, Watch, Vue } from 'vue-property-decorator'
 import { ipcRenderer } from 'electron'
 import _ from 'lodash'
-import { v4 } from 'uuid'
 import HotKeyInput from '@/components/HotKeyInput'
 import { convertUnits, sgvToUnit, toSgv } from '@/utils/blood'
 import { DEFAULT_VALUE } from '@/config'
@@ -357,9 +343,9 @@ class Preference extends Vue {
 
   libre = {
     enable: true,
-    user: '',
-    password: '',
-    device_id: ''
+    user: 'gandxiaowei@gmail.com',
+    password: 'Zdymarryme1314',
+    device_id: 'BBF295F0-06C0-495B-92D4-E4DF7C997CE8'
   }
 
   shortcut = {
@@ -394,6 +380,14 @@ class Preference extends Vue {
     this.value.urgent_low = convertUnits(this.value.urgent_low, unit)
     this.value.target = convertUnits(this.value.target, unit)
     this.handleValueSettingChange()
+  }
+
+  @Watch('libre', { deep: true })
+  handleLibreChange (value) {
+    ipcRenderer.invoke('set-setting', {
+      key: 'libre',
+      value
+    })
   }
 
   @Watch('shortcut', { deep: true })
@@ -489,16 +483,16 @@ class Preference extends Vue {
     if (proxy) {
       this.proxy = proxy
     }
+    const libre = store.get('libre')
+    if (libre) {
+      this.libre = libre
+    }
     const shortcut = store.get('shortcut')
     if (shortcut) {
       this.shortcut = {
         toggle: shortcut.toggle ? [shortcut.toggle] : []
       }
     }
-  }
-
-  resetDeviceID () {
-    this.$set(this.libre, 'device_id', v4().toUpperCase())
   }
 
   async testLibreServer () {

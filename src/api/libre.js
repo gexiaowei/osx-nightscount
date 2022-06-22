@@ -23,7 +23,7 @@ export async function auth (username, password, device, setDevice) {
   return response.data.result.UserToken
 }
 
-export async function transfer (device, token, glucoseEntries, foodEntries, insulinEntries) {
+export async function transfer (device, token, glucoseEntries, foodEntries = [], insulinEntries = []) {
   const data = {
     UserToken: token,
     GatewayType: 'FSLibreLink.iOS',
@@ -72,6 +72,5 @@ export async function transfer (device, token, glucoseEntries, foodEntries, insu
       'Content-Type': 'application/json'
     }
   })
-  console.log('transferLibreView, response', response.data)
   return response.data
 }
