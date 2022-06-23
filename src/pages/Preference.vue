@@ -311,9 +311,9 @@
             alt=""
           >
           <h3 class="mt-2">
-            CGM Monitor 1.0.0
+            CGM Monitor 1.1.0
           </h3>
-          <div>Copyright © 2022-2023 Gexiaowei</div>
+          <div>Copyright © 2022 gexiaowei</div>
         </div>
       </el-tab-pane>
     </el-tabs>
