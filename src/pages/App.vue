@@ -13,36 +13,42 @@
             <img
               v-if="['SingleUp','DoubleUp','TripleUp'].includes(current.direction)"
               class="arrow"
+              :class="getSGVStyle(current.sgv)"
               src="@/assets/icons/arrow-up.svg"
               alt=""
             >
             <img
               v-else-if="['FortyFiveUp'].includes(current.direction)"
               class="arrow"
+              :class="getSGVStyle(current.sgv)"
               src="@/assets/icons/arrow-up-right.svg"
               alt=""
             >
             <img
               v-else-if="['FortyFiveDown'].includes(current.direction)"
               class="arrow"
+              :class="getSGVStyle(current.sgv)"
               src="@/assets/icons/arrow-down-right.svg"
               alt=""
             >
             <img
               v-else-if="['SingleDown','DoubleDown','TripleDown'].includes(current.direction)"
               class="arrow"
+              :class="getSGVStyle(current.sgv)"
               src="@/assets/icons/arrow-down.svg"
               alt=""
             >
             <img
               v-else-if="['RATE OUT OF RANGE'].includes(current.direction)"
               class="arrow"
+              :class="getSGVStyle(current.sgv)"
               src="@/assets/icons/arrows-from-line.svg"
               alt=""
             >
             <img
               v-else
               class="arrow"
+              :class="getSGVStyle(current.sgv)"
               src="@/assets/icons/arrow-right.svg"
               alt=""
             >
@@ -582,7 +588,7 @@ export default class Chart extends Vue {
         }
 
         &.danger {
-          color: var(--error-color) !important;
+          color: var(--danger-color) !important;
         }
       }
 
@@ -590,6 +596,14 @@ export default class Chart extends Vue {
         width: 3.5rem;
         height: 3.5rem;
         filter: invert(58%) sepia(100%) saturate(295%) hue-rotate(56deg) brightness(93%) contrast(98%);
+
+        &.warning {
+          filter: invert(76%) sepia(65%) saturate(1162%) hue-rotate(332deg) brightness(98%) contrast(84%) !important;
+        }
+
+        &.danger {
+          filter: invert(65%) sepia(33%) saturate(5238%) hue-rotate(318deg) brightness(99%) contrast(94%) !important;
+        }
       }
     }
 
