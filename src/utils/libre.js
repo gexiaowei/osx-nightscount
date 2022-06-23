@@ -3,7 +3,6 @@ import store from '@/utils/store'
 import log from './log'
 
 import { auth, transfer } from '@/api/libre'
-import _ from 'lodash'
 import { DEFAULT_VALUE } from '@/config'
 
 class Libre {
@@ -38,7 +37,7 @@ class Libre {
   }
 
   async uploadToLibreServer (libre, data) {
-    const value = store.get('value', _.cloneDeep(DEFAULT_VALUE))
+    const value = store.get('value') || { ...DEFAULT_VALUE }
     const {
       user,
       password,

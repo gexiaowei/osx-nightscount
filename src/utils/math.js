@@ -5,3 +5,7 @@ export function standardDeviation (arr, usePopulation = false) {
     (arr.length - (usePopulation ? 0 : 1))
   )
 }
+
+export function mean (arr) {
+  return arr.reduce((a, b) => a + b, 0) / arr.length
+}

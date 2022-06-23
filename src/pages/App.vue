@@ -192,7 +192,6 @@ import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { ScatterChart } from 'echarts/charts'
 import moment from 'moment'
-import _ from 'lodash'
 import {
   LegendComponent,
   MarkLineComponent,
@@ -207,7 +206,7 @@ import { getTreatments } from '@/api/treatment'
 import { ipcRenderer } from 'electron'
 import { getUnitLabel, sgvToUnit, sgvToUnitString } from '@/utils/blood'
 import store from '@/utils/store'
-import { standardDeviation } from '@/utils/math'
+import { standardDeviation, mean } from '@/utils/math'
 import { DEFAULT_VALUE } from '@/config'
 
 use([
@@ -249,7 +248,7 @@ export default class Chart extends Vue {
     offset: 0
   }
 
-  value = _.cloneDeep(DEFAULT_VALUE)
+  value = { ...DEFAULT_VALUE }
 
   device = null
 
@@ -258,11 +257,11 @@ export default class Chart extends Vue {
   }
 
   get average () {
-    return this.entries.length ? _.chain(this.entries).map('sgv').mean().value() : 0
+    return this.entries.length ? mean(this.entries.map(item => item.sgv)) : 0
   }
 
   get HbA1c () {
-    return this.entries.length ? (Math.round(10 * (_.chain(this.entries).map('sgv').mean().value() + 46.7) / 28.7) / 10).toFixed(1) : 0
+    return this.entries.length ? (Math.round(10 * (mean(this.entries.map(item => item.sgv)) + 46.7) / 28.7) / 10).toFixed(1) : 0
   }
 
   get CV () {
@@ -508,10 +507,7 @@ export default class Chart extends Vue {
   }
 
   getLocalSetting () {
-    const value = store.get('value')
-    if (value) {
-      this.value = value
-    }
+    this.value = store.get('value') || { ...DEFAULT_VALUE }
   }
 
   async getDeviceStatus () {

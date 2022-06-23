@@ -8,7 +8,6 @@ import path from 'path'
 import { getEntries } from '@/api/entries'
 import store from '@/utils/store'
 import { getUnitLabel, sgvToUnitString } from '@/utils/blood'
-import _ from 'lodash'
 import libre from '@/utils/libre'
 import log from '@/utils/log'
 import { DEFAULT_VALUE } from '@/config'
@@ -21,7 +20,7 @@ const KEY_MAP = {
   '⌥': 'Alt'
 }
 const isDevelopment = process.env.NODE_ENV !== 'production'
-let value = store.get('value', _.cloneDeep(DEFAULT_VALUE))
+let value = store.get('value') || { ...DEFAULT_VALUE }
 
 const config = store.get('config')
 const server = store.get('server')

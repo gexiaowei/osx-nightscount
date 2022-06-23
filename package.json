@@ -22,7 +22,6 @@
     "electron-store": "^8.0.2",
     "element-theme-dark": "^1.0.3",
     "element-ui": "^2.15.9",
-    "lodash": "^4.17.21",
     "menubar": "^9.2.0",
     "moment": "^2.29.3",
     "regression": "^2.0.1",

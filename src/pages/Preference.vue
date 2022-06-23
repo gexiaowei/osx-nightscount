@@ -323,7 +323,6 @@
 <script>
 import { Component, Watch, Vue } from 'vue-property-decorator'
 import { ipcRenderer } from 'electron'
-import _ from 'lodash'
 import HotKeyInput from '@/components/HotKeyInput'
 import { convertUnits, sgvToUnit, toSgv } from '@/utils/blood'
 import { DEFAULT_VALUE } from '@/config'
@@ -335,7 +334,7 @@ export default @Component({
 class Preference extends Vue {
   tab = 'common'
   testing = false
-  value = _.cloneDeep(DEFAULT_VALUE)
+  value = { ...DEFAULT_VALUE }
 
   server = {
     url: ''
