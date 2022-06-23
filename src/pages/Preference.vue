@@ -189,11 +189,11 @@
             </el-form-item>
             <el-form-item
               v-show="libre.enable"
-              label="设备ID"
+              label="设备SN"
             >
               <el-input
                 v-model="libre.device_id"
-                placeholder="请输入设备ID"
+                placeholder="请输入设备序列号"
               />
             </el-form-item>
             <el-form-item
@@ -342,10 +342,10 @@ class Preference extends Vue {
   }
 
   libre = {
-    enable: true,
-    user: 'gandxiaowei@gmail.com',
-    password: 'Zdymarryme1314',
-    device_id: 'BBF295F0-06C0-495B-92D4-E4DF7C997CE8'
+    enable: false,
+    user: '',
+    password: '',
+    device_id: ''
   }
 
   shortcut = {

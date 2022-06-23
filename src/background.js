@@ -9,9 +9,10 @@ import { getEntries } from '@/api/entries'
 import store from '@/utils/store'
 import { getUnitLabel, sgvToUnitString } from '@/utils/blood'
 import _ from 'lodash'
+import libre from '@/utils/libre'
+import log from '@/utils/log'
 import { DEFAULT_VALUE } from '@/config'
-import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
-import { auth, transfer } from '@/api/libre'
+// import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 
 const KEY_MAP = {
   '⌘': 'CommandOrControl',
@@ -44,14 +45,14 @@ protocol.registerSchemesAsPrivileged([
 ])
 
 app.on('ready', async () => {
-  if (isDevelopment && !process.env.IS_TEST) {
-    // Install Vue Devtools
-    try {
-      await installExtension(VUEJS_DEVTOOLS)
-    } catch (e) {
-      console.error('Vue Devtools failed to install:', e.toString())
-    }
-  }
+  // if (isDevelopment && !process.env.IS_TEST) {
+  //   // Install Vue Devtools
+  //   try {
+  //     await installExtension(VUEJS_DEVTOOLS)
+  //   } catch (e) {
+  //     log.error('Vue Devtools failed to install:', e.toString())
+  //   }
+  // }
 
   initEvent()
   registerShortcut(store.get('shortcut'))
@@ -62,7 +63,7 @@ app.on('ready', async () => {
     nativeTheme.themeSource = config.theme
   }
   startLoop().then(() => {
-    console.log('成功获取远程数据')
+    log.info('成功获取远程数据')
   })
 })
 
@@ -85,7 +86,7 @@ async function createPreferenceWindow () {
 
     if (process.env.WEBPACK_DEV_SERVER_URL) {
       await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL + 'preference.html')
-      if (!process.env.IS_TEST) win.webContents.openDevTools()
+      // if (!process.env.IS_TEST) win.webContents.openDevTools()
     } else {
       createProtocol('app')
       win.loadURL('app://./preference.html')
@@ -267,10 +268,7 @@ async function getCurrentUpdateEntries () {
     })
     if (data.length) {
       entries[currentDate] = [...data, ...entries[currentDate]]
-      const libre = store.get('libre')
-      if (libre && libre.enable) {
-        uploadToLibre(libre, data).then(() => { console.log('上传到Libre服务器成功') })
-      }
+      libre.uploadData(data)
     }
   } else {
     await getDateEntries()
@@ -313,7 +311,7 @@ function initEvent () {
         }
         if (setting.key === 'server') {
           restartLoop().then(() => {
-            console.log('重设服务器，获取数据成功')
+            log.info('重设服务器，获取数据成功')
           })
         }
         if (setting.key === 'config') {
@@ -332,19 +330,19 @@ function initEvent () {
         }
       } catch (e) {
         store.delete(setting.key)
-        console.log('设置失败', setting)
+        log.info('设置失败', setting)
       } finally {
         mb && mb.window.webContents.send('setting-updated')
       }
     }
   })
-  ipcMain.handle('test-libre', (event, data) => {
+  ipcMain.handle('test-libre', async (event, data) => {
     const {
       user,
       password,
       device_id
     } = data
-    return auth(user, password, device_id, false)
+    return await libre.getAuth(user, password, device_id)
   })
 }
 
@@ -357,33 +355,23 @@ async function startLoop () {
       try {
         await getCurrentUpdateEntries()
       } catch (e) {
-        console.log('获取数据失败')
+        log.info('获取数据失败')
       }
     }, 30 * 1000)
     await getCurrentUpdateEntries()
   } catch (e) {
-    console.log('初始化数据失败')
+    log.info('初始化数据失败')
   }
 }
 
 async function restartLoop () {
   stopLoop()
   startLoop().then(() => {
-    console.log('重设服务器，获取数据成功')
+    log.info('重设服务器，获取数据成功')
   })
 }
 
 function stopLoop () {
   interval_id && clearInterval(interval_id)
   interval_id = null
-}
-
-async function uploadToLibre (libre, data) {
-  const {
-    user,
-    password,
-    device_id
-  } = libre
-  const token = await auth(user, password, device_id, false)
-  await transfer(device_id, token, data, [], [])
 }

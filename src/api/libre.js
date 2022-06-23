@@ -10,17 +10,15 @@ export async function auth (username, password, device, setDevice) {
     Password: password
   }
 
-  console.log(JSON.stringify(data))
   const response = await axios.post('https://api-eu.libreview.io/lsl/api/nisperson/getauthentication', data, {
     headers: {
       'Content-Type': 'application/json'
     }
   })
-  console.log(response.data)
   if (response.data.status !== 0) {
     throw new Error('授权失败')
   }
-  return response.data.result.UserToken
+  return response.data.result
 }
 
 export async function transfer (device, token, glucoseEntries, foodEntries = [], insulinEntries = []) {

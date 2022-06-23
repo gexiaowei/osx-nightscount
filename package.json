@@ -18,6 +18,7 @@
     "bootstrap-4-grid": "^3.4.0",
     "core-js": "^3.8.3",
     "echarts": "^5.3.2",
+    "electron-log": "^4.4.7",
     "electron-store": "^8.0.2",
     "element-theme-dark": "^1.0.3",
     "element-ui": "^2.15.9",
