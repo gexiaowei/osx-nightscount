@@ -4,18 +4,25 @@ module.exports = defineConfig({
   transpileDependencies: true,
   pages: {
     index: {
-      entry: 'src/pages/main.js',
+      entry: 'src/pages/App.js',
       template: 'public/index.html',
       filename: 'index.html',
       title: 'Entries Page',
       chunks: ['chunk-vendors', 'chunk-common', 'index']
     },
     preference: {
-      entry: 'src/pages/preference.js',
+      entry: 'src/pages/Preference.js',
       template: 'public/preference.html',
       filename: 'preference.html',
       title: '偏好设置',
       chunks: ['preference-chunk-vendors', 'preference-chunk-common', 'preference']
+    },
+    libre: {
+      entry: 'src/pages/Libre.js',
+      template: 'public/index.html',
+      filename: 'libre.html',
+      title: 'Libre批量上传',
+      chunks: ['libre-chunk-vendors', 'libre-chunk-common', 'libre']
     }
   },
   chainWebpack: (config) => {

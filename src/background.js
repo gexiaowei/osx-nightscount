@@ -9,7 +9,7 @@ import { getEntries } from '@/api/entries'
 import store from '@/utils/store'
 import { getUnitLabel, sgvToUnitString } from '@/utils/blood'
 import libre from '@/utils/libre'
-import log from '@/utils/log'
+import logger from '@/utils/log'
 import { DEFAULT_VALUE } from '@/config'
 // import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 
@@ -24,7 +24,9 @@ let value = store.get('value') || { ...DEFAULT_VALUE }
 
 const config = store.get('config')
 const server = store.get('server')
-let mb, win, interval_id
+let interval_id
+let mb, preference_win, libre_batch_upload_win
+
 const entries = {}
 
 createMenu()
@@ -49,20 +51,19 @@ app.on('ready', async () => {
   //   try {
   //     await installExtension(VUEJS_DEVTOOLS)
   //   } catch (e) {
-  //     log.error('Vue Devtools failed to install:', e.toString())
+  //     logger.error('Vue Devtools failed to install:', e.toString())
   //   }
   // }
 
   initEvent()
   registerShortcut(store.get('shortcut'))
   await createTray()
-  // await createPreferenceWindow()
   app.dock.hide()
   if (config) {
     nativeTheme.themeSource = config.theme
   }
   startLoop().then(() => {
-    log.info('成功获取远程数据')
+    logger.info('成功获取远程数据')
   })
 })
 
@@ -71,11 +72,11 @@ app.on('will-quit', () => {
 })
 
 async function createPreferenceWindow () {
-  if (!win) {
-    win = new BrowserWindow({
+  if (!preference_win) {
+    preference_win = new BrowserWindow({
       width: 580,
       height: 420,
-      resizable: true,
+      resizable: false,
       minimizable: false,
       webPreferences: {
         nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
@@ -84,18 +85,51 @@ async function createPreferenceWindow () {
     })
 
     if (process.env.WEBPACK_DEV_SERVER_URL) {
-      await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL + 'preference.html')
+      await preference_win.loadURL(process.env.WEBPACK_DEV_SERVER_URL + 'preference.html')
       // if (!process.env.IS_TEST) win.webContents.openDevTools()
     } else {
       createProtocol('app')
-      win.loadURL('app://./preference.html')
+      preference_win.loadURL('app://./preference.html')
     }
 
-    win.on('closed', () => {
-      win = null
+    preference_win.on('closed', () => {
+      preference_win = null
     })
   }
-  return win
+  return preference_win
+}
+
+async function createLibreBatchUploadWindow () {
+  if (!preference_win) {
+    return
+  }
+  if (!libre_batch_upload_win) {
+    libre_batch_upload_win = new BrowserWindow({
+      width: 300,
+      height: 360,
+      resizable: false,
+      minimizable: false,
+      parent: preference_win,
+      modal: true,
+      webPreferences: {
+        nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
+        contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION
+      }
+    })
+
+    if (process.env.WEBPACK_DEV_SERVER_URL) {
+      await libre_batch_upload_win.loadURL(process.env.WEBPACK_DEV_SERVER_URL + 'libre.html')
+      // if (!process.env.IS_TEST) win.webContents.openDevTools()
+    } else {
+      createProtocol('app')
+      libre_batch_upload_win.loadURL('app://./libre.html')
+    }
+
+    libre_batch_upload_win.on('closed', () => {
+      libre_batch_upload_win = null
+    })
+  }
+  return libre_batch_upload_win
 }
 
 function registerShortcut (shortcut) {
@@ -310,7 +344,7 @@ function initEvent () {
         }
         if (setting.key === 'server') {
           restartLoop().then(() => {
-            log.info('重设服务器，获取数据成功')
+            logger.info('重设服务器，获取数据成功')
           })
         }
         if (setting.key === 'config') {
@@ -329,12 +363,13 @@ function initEvent () {
         }
       } catch (e) {
         store.delete(setting.key)
-        log.info('设置失败', setting)
+        logger.info('设置失败', setting)
       } finally {
         mb && mb.window.webContents.send('setting-updated')
       }
     }
   })
+
   ipcMain.handle('test-libre', async (event, data) => {
     const {
       user,
@@ -342,6 +377,16 @@ function initEvent () {
       device_id
     } = data
     return await libre.getAuth(user, password, device_id)
+  })
+
+  ipcMain.handle('batch-upload-libre', async () => {
+    await createLibreBatchUploadWindow()
+  })
+  ipcMain.handle('batch-upload-libre-run', async (event, data) => {
+    return await libre.transferData(data.start, data.end)
+  })
+  ipcMain.handle('batch-upload-libre-close', async () => {
+    libre_batch_upload_win.close()
   })
 }
 
@@ -354,19 +399,19 @@ async function startLoop () {
       try {
         await getCurrentUpdateEntries()
       } catch (e) {
-        log.info('获取数据失败')
+        logger.error('获取数据失败')
       }
     }, 30 * 1000)
     await getCurrentUpdateEntries()
   } catch (e) {
-    log.info('初始化数据失败')
+    logger.info('初始化数据失败')
   }
 }
 
 async function restartLoop () {
   stopLoop()
   startLoop().then(() => {
-    log.info('重设服务器，获取数据成功')
+    logger.info('重设服务器，获取数据成功')
   })
 }
 

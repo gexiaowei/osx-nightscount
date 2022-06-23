@@ -205,6 +205,12 @@
               >
                 测试连接
               </el-button>
+              <el-button
+                type="primary"
+                @click="batchUpload"
+              >
+                批量上传
+              </el-button>
             </el-form-item>
           </el-form>
         </div>
@@ -504,6 +510,10 @@ class Preference extends Vue {
     } finally {
       this.testing = false
     }
+  }
+
+  batchUpload () {
+    ipcRenderer.invoke('batch-upload-libre')
   }
 }
 </script>
