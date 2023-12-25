@@ -86,7 +86,7 @@
               <img
                 slot="reference"
                 class="history-button"
-                src="@/assets/icons/clock-rotate-left.svg"
+                src="@/assets/icons/calendar-day.svg"
                 alt=""
               >
             </el-popover>
