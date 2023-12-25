@@ -254,7 +254,7 @@ function createMenu () {
         },
         server && server.url
           ? {
-              label: 'Nightscount',
+              label: 'Nightscout',
               click: async () => {
                 await shell.openExternal(server.url)
               }
@@ -404,6 +404,7 @@ async function startLoop () {
     }, 30 * 1000)
     await getCurrentUpdateEntries()
   } catch (e) {
+    console.log(e)
     logger.info('初始化数据失败')
   }
 }

@@ -161,6 +161,22 @@
               />
             </el-form-item>
             <el-form-item
+              label="API Secret"
+            >
+              <el-input
+                v-model="server.secret"
+                placeholder="API Secret(您搭建服务的Secret)"
+              />
+            </el-form-item>
+            <el-form-item
+              label="token"
+            >
+              <el-input
+                v-model="server.token"
+                placeholder="Nightscout token(需要新建)"
+              />
+            </el-form-item>
+            <el-form-item
               label="Libre服务"
               label-position="left"
             >
@@ -343,7 +359,9 @@ class Preference extends Vue {
   value = { ...DEFAULT_VALUE }
 
   server = {
-    url: ''
+    url: '',
+    secret: '',
+    token: ''
   }
 
   libre = {

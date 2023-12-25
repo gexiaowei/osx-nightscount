@@ -5,10 +5,12 @@ const request = axios.create()
 
 request.interceptors.request.use(function (config) {
   let baseUrl = store.get('server.url')
+  const apiSecret = store.get('server.secret')
+  const token = store.get('server.token')
   const proxy = store.get('proxy')
   if (!baseUrl) {
     // baseUrl = 'https://nightscout-gexiaowei.herokuapp.com'
-    throw new Error('未设置Nightscount服务器地址')
+    throw new Error('未设置Nightscout服务器地址')
   } else {
     if (!baseUrl.startsWith('https://')) {
       baseUrl = 'https://' + baseUrl
@@ -25,6 +27,14 @@ request.interceptors.request.use(function (config) {
     }
   }
   config.baseURL = `${baseUrl}/api/v1/`
+  config.headers = {
+    'api-secret': apiSecret,
+    accept: 'application/json'
+  }
+  config.params = {
+    ...config.params,
+    token
+  }
   return config
 }, function (error) {
   return Promise.reject(error)
